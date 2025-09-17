@@ -45,6 +45,11 @@
   .author{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
   .link{color:#0a66c2;text-decoration:none}
   .list{display:flex;flex-direction:column;gap:8px}
+  /* Swipe interactions */
+.card-gesture{ position:relative; touch-action: pan-y; user-select:none; will-change: transform; }
+.badge-swipe{ position:absolute; top:10px; padding:6px 10px; border-radius:8px; font-weight:700; border:2px solid; background:rgba(255,255,255,.9); opacity:0; transition:opacity .15s ease; }
+.badge-swipe.like{ left:10px; color:#0a6a0a; border-color:#0a6a0a; }
+.badge-swipe.nope{ right:10px; color:#cc1b1b; border-color:#cc1b1b; }
 </style>
 </head>
 <body>
@@ -217,11 +222,38 @@
     ? `<div class="cover"><img src="${b.image}" alt="Cover of ${escapeHtml(b.title)}"></div>`
     : `<div class="cover" aria-hidden="true">${b.title.slice(0,1)}</div>`;
 
-  el.innerHTML = `
+  el.innerHTML = 
+    addSwipe(document.getElementById('card'), ()=>pass(), ()=>saveBook(b.id));`
+  <div id="card" class="card-gesture swipe">
     ${coverHTML}
     <div>
       <div class="row" style="justify-content:space-between;align-items:center">
         <div>
+          <div class="muted">Match score: <b>${Math.round(score(b)*10)/10}</b></div>
+          ${b.gold?'<span class="chip" style="background:#fff7cc;border-color:#E7C200">⭐ Featured</span>':''}
+        </div>
+        <div class="badge gold" id="ptsTop">${state.pts} pts</div>
+      </div>
+      <h2 style="margin:6px 0 4px">${escapeHtml(b.title)}</h2>
+      <div class="muted">by ${escapeHtml(b.author)}</div>
+      <div class="chips">${chips.map(c=>`<span class="chip">${escapeHtml(c)}</span>`).join('')}</div>
+      <div class="actions">
+        <button class="btn" onclick="pass()">Not for me</button>
+        <button class="btn gold" onclick="saveBook('${b.id}')">Save (+5)</button>
+      </div>
+      <div class="divider"></div>
+      <div class="author">
+        <b>Author</b> · <span class="muted">${escapeHtml(b.author)}</span>
+        ${b.links?.site?`· <a class="link" href="${b.links.site}">Website</a>`:''}
+        ${b.links?.buy?`· <a class="link" href="${b.links.buy}">Buy</a>`:''}
+      </div>
+    </div>
+
+    <!-- swipe helper badges -->
+    <span class="badge-swipe like">SAVE</span>
+    <span class="badge-swipe nope">NOPE</span>
+  </div>
+`;
           <div class="muted">Match score: <b>${Math.round(score(b)*10)/10}</b></div>
           ${b.gold?'<span class="chip" style="background:#fff7cc;border-color:#E7C200">⭐ Featured</span>':''}
         </div>
@@ -253,6 +285,43 @@
       }
     });
   }
+}
+function addSwipe(el, onLeft, onRight){
+  let startX = 0, dx = 0, dragging = false;
+  const threshold = 80;
+  const like = el.querySelector('.badge-swipe.like');
+  const nope = el.querySelector('.badge-swipe.nope');
+
+  const onDown = (e)=>{ dragging = true; startX = e.clientX ?? e.touches?.[0]?.clientX; el.style.transition=''; };
+  const onMove = (e)=>{
+    if(!dragging) return;
+    const x = e.clientX ?? e.touches?.[0]?.clientX;
+    dx = x - startX;
+    const rot = dx/12;
+    el.style.transform = `translateX(${dx}px) rotate(${rot}deg)`;
+    const a = Math.min(1, Math.abs(dx)/120);
+    if(dx>0){ if(like){ like.style.opacity = a; } if(nope){ nope.style.opacity = 0; } }
+    else    { if(nope){ nope.style.opacity = a; } if(like){ like.style.opacity = 0; } }
+  };
+  const snap = ()=>{
+    el.style.transition = 'transform .2s ease';
+    el.style.transform = 'translateX(0) rotate(0)';
+    if(like) like.style.opacity = 0;
+    if(nope) nope.style.opacity = 0;
+  };
+  const onUp = ()=>{
+    if(!dragging) return;
+    dragging = false;
+    if(dx >  threshold){ el.style.transition='transform .2s ease'; el.style.transform='translateX(500px) rotate(15deg)'; setTimeout(onRight, 160); }
+    else if(dx < -threshold){ el.style.transition='transform .2s ease'; el.style.transform='translateX(-500px) rotate(-15deg)'; setTimeout(onLeft, 160); }
+    else snap();
+  };
+
+  // Pointer events cover mouse, pen, and touch on iPad Safari
+  el.addEventListener('pointerdown', onDown);
+  el.addEventListener('pointermove', onMove);
+  el.addEventListener('pointerup', onUp);
+  el.addEventListener('pointercancel', onUp);
 }
   /** Actions **/
   function pass(){ state.order.push(state.order.shift()); show(0); }
