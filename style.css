@@ -1,17 +1,52 @@
-/* style.css — the "clothes" for your app */
-body {
-  font-family: Arial, sans-serif;
-  text-align: center;
-  background-color: #fdfdfd;
-  margin: 0;
-  padding: 0;
+// Step 2: Profile with "Mood now"
+const MOODS = ["Calm","Inspired","Hopeful","Energized","Cozy","Focused","Grounded","Joyful"];
+const DESIRED = ["Calm","Hopeful","Motivated","Curious","Comforted","Focused","Joyful"];
+const GROWTH = ["mental","spiritual","emotional","functional","financial","social"];
+
+const state = {
+  moodNow: new Set(),
+  desired: new Set(),
+  growth: new Set(),
+  pts: Number(localStorage.getItem("bh_pts")||0)
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  // badges
+  document.getElementById("pts").textContent = `${state.pts} pts`;
+
+  // render pills
+  renderPills("moodNow", MOODS, state.moodNow);
+  renderPills("desired", DESIRED, state.desired);
+  renderPills("growth", GROWTH, state.growth);
+
+  // summary + button
+  updateSummary();
+  document.getElementById("next").addEventListener("click", () => {
+    alert("Great! Next we’ll add the swipe card.");
+  });
+});
+
+function renderPills(containerId, items, set){
+  const box = document.getElementById(containerId);
+  box.innerHTML = "";
+  items.forEach(name => {
+    const b = document.createElement("button");
+    b.className = "pill";
+    b.textContent = name;
+    b.addEventListener("click", () => {
+      if(set.has(name)){ set.delete(name); b.classList.remove("on"); }
+      else { set.add(name); b.classList.add("on"); }
+      updateSummary();
+    });
+    box.appendChild(b);
+  });
 }
 
-h1 {
-  color: #d94f04; /* bright orange-red */
-}
-
-p {
-  font-size: 18px;
-  color: #333;
+function updateSummary(){
+  const txt = [
+    state.moodNow.size ? `Mood now: ${[...state.moodNow].join(", ")}` : "",
+    state.desired.size ? `Desired: ${[...state.desired].join(", ")}` : "",
+    state.growth.size ? `Growth: ${[...state.growth].join(", ")}` : ""
+  ].filter(Boolean).join(" • ");
+  document.getElementById("summary").textContent = txt || "Pick some moods and categories above.";
 }
