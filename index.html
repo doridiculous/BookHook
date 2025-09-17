@@ -50,6 +50,8 @@
 .badge-swipe{ position:absolute; top:10px; padding:6px 10px; border-radius:8px; font-weight:700; border:2px solid; background:rgba(255,255,255,.9); opacity:0; transition:opacity .15s ease; }
 .badge-swipe.like{ left:10px; color:#0a6a0a; border-color:#0a6a0a; }
 .badge-swipe.nope{ right:10px; color:#cc1b1b; border-color:#cc1b1b; }
+.field{width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; font:inherit}
+.note{min-height:20px}
 </style>
 </head>
 <body>
@@ -64,19 +66,19 @@
       <h2>Your Profile</h2>
 
       <div class="row">
-        <label class="lbl">Mood Now</label>
-        <div id="moodNow" class="pills" aria-label="Select your current mood"></div>
-      </div>
+  <label class="lbl">Mood Now</label>
+  <div id="moodNowLevel" class="pills" aria-label="How you feel right now"></div>
+</div>
 
-      <div class="row">
-        <label class="lbl">Desired Mood</label>
-        <div id="desired" class="pills" aria-label="Select desired emotions"></div>
-      </div>
+<div class="row">
+  <label class="lbl">Desired Read</label>
+  <div id="desiredRead" class="pills" aria-label="What vibe you want from a book"></div>
+</div>
 
-      <div class="row">
-        <label class="lbl">Growth categories</label>
-        <div id="growth" class="pills" aria-label="Select growth areas"></div>
-      </div>
+<div class="row">
+  <label class="lbl">Mood After</label>
+  <div id="moodAfterLevel" class="pills" aria-label="How you feel after reading"></div>
+</div>
 
       <div class="muted">Tip: your choices power the matches below.</div>
     </section>
@@ -86,7 +88,18 @@
       <h2>Discover</h2>
       <div id="swipe" class="swipe"></div>
     </section>
-
+<section class="card">
+  <h2>Share Your Story</h2>
+  <div class="muted" style="margin-bottom:8px">
+    Tell us what changed for you after reading. Earn points when you share authentically.
+  </div>
+  <textarea id="reflectionText" class="field" rows="4" placeholder="What shifted for you? Any aha, laugh, calm moment…"></textarea>
+  <div class="actions" style="margin-top:10px">
+    <button class="btn" onclick="resetReflection()">Reset</button>
+    <button class="btn gold" onclick="submitReflection()">Save reflection</button>
+  </div>
+  <div id="reflectionNote" class="note muted" style="margin-top:8px"></div>
+</section>
     <!-- Bookshelf -->
     <section class="card">
       <h2>Your Bookshelf</h2>
