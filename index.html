@@ -284,37 +284,35 @@
   }
 
   /** Utils **/
-  function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
-<script>
-  // … keep your existing Utils like escapeHtml …
-
-  // Try Google Books first (title + author), fallback to Open Library if you add ISBN later
-  async function resolveCover(book){
-    // 1) Google Books search by title + author
-    try{
-      const q = encodeURIComponent(`intitle:${book.title} inauthor:${book.author}`);
-      const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1`);
-      if(res.ok){
-        const data = await res.json();
-        const img = data?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail
-                 || data?.items?.[0]?.volumeInfo?.imageLinks?.smallThumbnail;
-        if(img) return img.replace('http://','https://'); // ensure https
-      }
-    }catch(e){ /* ignore */ }
-
-    // 2) Open Library by ISBN (if you add book.isbn)
-    if(book.isbn){
-      const url = `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg`;
-      // quick check if it exists
-      try{
-        const head = await fetch(url, { method:'HEAD' });
-        if(head.ok) return url;
-      }catch(e){ /* ignore */ }
-    }
-
-    // no luck
-    return null;
-  }
 </script>
 </body>
+async function resolveCover(book){
+  // Try Google Books first (search by title + author)
+  try {
+    const q = encodeURIComponent(`intitle:${book.title} inauthor:${book.author}`);
+    const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1`);
+    if(res.ok){
+      const data = await res.json();
+      const img = data?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail
+               || data?.items?.[0]?.volumeInfo?.imageLinks?.smallThumbnail;
+      if(img) return img.replace('http://','https://'); // force HTTPS
+    }
+  } catch(e) {
+    console.warn("Google Books lookup failed", e);
+  }
+
+  // Fallback: Open Library (if you add ISBN to your book object)
+  if(book.isbn){
+    const url = `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg`;
+    try {
+      const head = await fetch(url, { method:'HEAD' });
+      if(head.ok) return url;
+    } catch(e) {
+      console.warn("Open Library lookup failed", e);
+    }
+  }
+
+  // If nothing worked, return null
+  return null;
+}
 </html>
