@@ -90,67 +90,67 @@
 
 <!-- Inline JS so it ALWAYS runs -->
 <script>
-  /** Data **/
+  /** Reader inputs (expanded) **/
   const MOODS = [
-  "Tired","Lonely","Overwhelmed","Stressed","Anxious","Curious","Distracted",
-  "Lost","Sad","Restless","Angry","Bored","Unfocused","Empty","Hopeful",
-  "Grateful","Inspired","Excited","Joyful","Calm","Grounded","Confident","Chill","Bored","Playful","Reflective"
-];
+    "Tired","Lonely","Overwhelmed","Stressed","Anxious","Curious","Distracted",
+    "Lost","Sad","Restless","Angry","Bored","Unfocused","Empty","Hopeful",
+    "Grateful","Inspired","Excited","Joyful","Calm","Grounded","Confident",
+    "Chill","Playful","Reflective"
+  ];
 
-const DESIRED = [
-  "Energized","Motivated","Empowered","Peaceful","Connected","Comforted",
-  "Entertained","Playful","Curious","Optimistic","Brave","Creative","Resilient",
-  "Romantic","Compassionate","Mindful","Uplifted","Adventurous","Free",
-  "Reflective","Grateful","Focused","Inspired","Chill","Laugh-out-loud","Mindset-shifting"
-];
+  const DESIRED = [
+    "Energized","Motivated","Empowered","Peaceful","Connected","Comforted",
+    "Entertained","Playful","Curious","Optimistic","Brave","Creative","Resilient",
+    "Romantic","Compassionate","Mindful","Uplifted","Adventurous","Free",
+    "Reflective","Grateful","Focused","Inspired","Chill","Laugh-out-loud",
+    "Mindset-shifting"
+  ];
 
-const GROWTH = [
-  "Mental","Physical","Spiritual","Emotional","Functional","Financial","Social"
-];
+  // Capitalized + Physical
+  const GROWTH = ["Mental","Physical","Spiritual","Emotional","Functional","Financial","Social"];
 
-  // Seed books (you can add more later)
+  /** Book catalog
+   *  Use 'vibes' (how the book FEELS) + 'facts' + optional 'tags'
+   */
   const BOOKS = [
     {
       id:"rid",
       title:"The Ridiculous: Book 1",
-      author:"J. Kippel & M. Blackstien",
-      moods:["Inspired","Hopeful","Joyful"],
-      goals:["emotional","functional","social"],
+      author:"Jef & Mindy",
+      vibes:["Funny","Satirical","Empowering","Chill","Mindset-shifting"],
       facts:{pace:"Medium", pages:312, year:2024},
-      gold:true, // priority boost
+      gold:true,
       links:{buy:"#", site:"#"},
-      tags:["Do Ridiculous","BodyProud","Mission-ready"]
+      tags:["Sci-Fi Comedy","Feel-good"]
     },
     {
       id:"hab",
       title:"Atomic Habits of the Heart",
       author:"A. North",
-      moods:["Focused","Grounded","Calm"],
-      goals:["mental","functional"],
+      vibes:["Focused","Grounded","Practical","Motivated","Calm"],
       facts:{pace:"Fast", pages:280, year:2019},
       links:{buy:"#"},
-      tags:["Tiny steps","Practical","Habit loop"]
+      tags:["Tiny steps","Habit loop"]
     },
     {
       id:"coz",
       title:"Star Soup & Cozy Skies",
       author:"L. Nova",
-      moods:["Calm","Cozy","Comforted"],
-      goals:["spiritual","emotional","sleep"],
+      vibes:["Calm","Cozy","Comforted","Reflective"],
       facts:{pace:"Slow", pages:220, year:2021},
       links:{buy:"#"},
       tags:["Soothing","Night read"]
     }
   ];
 
-  /** State **/
+  /** App state **/
   const state = {
     moodNow: new Set(),
     desired: new Set(),
-    growth: new Set(),
+    growth: new Set(), // not used in scoring yet; reserved for later filters/missions
     pts: Number(localStorage.getItem("bh_pts")||0),
     shelf: JSON.parse(localStorage.getItem("bh_shelf")||"[]"),
-    order: [] // will hold sorted books
+    order: []
   };
 
   /** Init **/
@@ -160,7 +160,7 @@ const GROWTH = [
     renderPills("desired", DESIRED, state.desired);
     renderPills("growth", GROWTH, state.growth);
     renderShelf();
-    refreshMatches(); // show first card immediately
+    refreshMatches();
   });
 
   /** UI helpers **/
@@ -180,12 +180,13 @@ const GROWTH = [
     });
   }
 
-  /** Matching **/
+  /** Matching
+   *  Strongly weight Desired Mood vs. book vibes, lightly weight Mood Now.
+   */
   function score(b){
     const inter = (arr,set)=>arr.filter(x=>set.has(x)).length;
-    let s = inter(b.moods, state.desired)*1.2 +
-            inter(b.moods, state.moodNow)*0.6 +
-            inter(b.goals??[], state.growth)*0.9;
+    let s = inter(b.vibes||[], state.desired)*1.4 +
+            inter(b.vibes||[], state.moodNow)*0.6;
     if(b.gold) s += 2.5; // Do Ridiculous priority
     return s;
   }
@@ -196,14 +197,21 @@ const GROWTH = [
   }
 
   function show(idx){
-    if(state.order.length===0){ document.getElementById("swipe").innerHTML='<div class="muted">No books yet.</div>'; return; }
+    if(state.order.length===0){
+      document.getElementById("swipe").innerHTML='<div class="muted">No books yet.</div>';
+      return;
+    }
     const b = state.order[idx%state.order.length];
     const el = document.getElementById("swipe");
+
     const chips = [
-      ...(b.tags||[]),
-      ...b.moods,
-      b.facts?.pace, b.facts?.pages?`${b.facts.pages}p`:null, b.facts?.year?`Since ${b.facts.year}`:null
+      ...(b.vibes||[]),                                   // book vibes first
+      b.facts?.pace,                                     // facts
+      b.facts?.pages ? `${b.facts.pages}p` : null,
+      b.facts?.year ? `Since ${b.facts.year}` : null,
+      ...(b.tags||[])                                    // optional tags last
     ].filter(Boolean);
+
     el.innerHTML = `
       <div class="cover" aria-hidden="true">${b.title.slice(0,1)}</div>
       <div>
@@ -232,11 +240,7 @@ const GROWTH = [
   }
 
   /** Actions **/
-  function pass(){
-    // rotate list: move first to end and show next
-    state.order.push(state.order.shift());
-    show(0);
-  }
+  function pass(){ state.order.push(state.order.shift()); show(0); }
 
   function saveBook(id){
     const book = BOOKS.find(x=>x.id===id);
