@@ -36,7 +36,8 @@
   /* Swipe card */
   .swipe{display:grid;grid-template-columns:180px 1fr;gap:16px}
   @media (max-width:720px){.swipe{grid-template-columns:1fr}}
-  .cover{width:100%;aspect-ratio:2/3;border-radius:10px;background:#ddd;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:48px}
+  .cover{width:100%;aspect-ratio:2/3;border-radius:10px;overflow:hidden;background:#ddd;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:48px}
+.cover img{width:100%;height:100%;object-fit:cover;display:block}
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
   .chip{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fafafa;font-size:13px}
   .actions{display:flex;gap:10px;margin-top:12px}
@@ -195,50 +196,64 @@
     state.order = [...BOOKS].sort((a,b)=>score(b)-score(a));
     show(0);
   }
-
+  
   function show(idx){
-    if(state.order.length===0){
-      document.getElementById("swipe").innerHTML='<div class="muted">No books yet.</div>';
-      return;
-    }
-    const b = state.order[idx%state.order.length];
-    const el = document.getElementById("swipe");
-
-    const chips = [
-      ...(b.vibes||[]),                                   // book vibes first
-      b.facts?.pace,                                     // facts
-      b.facts?.pages ? `${b.facts.pages}p` : null,
-      b.facts?.year ? `Since ${b.facts.year}` : null,
-      ...(b.tags||[])                                    // optional tags last
-    ].filter(Boolean);
-
-    el.innerHTML = `
-      <div class="cover" aria-hidden="true">${b.title.slice(0,1)}</div>
-      <div>
-        <div class="row" style="justify-content:space-between;align-items:center">
-          <div>
-            <div class="muted">Match score: <b>${Math.round(score(b)*10)/10}</b></div>
-            ${b.gold?'<span class="chip" style="background:#fff7cc;border-color:#E7C200">👑 Do Ridiculous Priority</span>':''}
-          </div>
-          <div class="badge gold" id="ptsTop">${state.pts} pts</div>
-        </div>
-        <h2 style="margin:6px 0 4px">${escapeHtml(b.title)}</h2>
-        <div class="muted">by ${escapeHtml(b.author)}</div>
-        <div class="chips">${chips.map(c=>`<span class="chip">${escapeHtml(c)}</span>`).join('')}</div>
-        <div class="actions">
-          <button class="btn" onclick="pass()">Not for me</button>
-          <button class="btn gold" onclick="saveBook('${b.id}')">Save (+5)</button>
-        </div>
-        <div class="divider"></div>
-        <div class="author">
-          <b>Author</b> · <span class="muted">${escapeHtml(b.author)}</span>
-          ${b.links?.site?`· <a class="link" href="${b.links.site}">Website</a>`:''}
-          ${b.links?.buy?`· <a class="link" href="${b.links.buy}">Buy</a>`:''}
-        </div>
-      </div>
-    `;
+  if(state.order.length===0){
+    document.getElementById("swipe").innerHTML='<div class="muted">No books yet.</div>';
+    return;
   }
+  const b = state.order[idx%state.order.length];
+  const el = document.getElementById("swipe");
 
+  const chips = [
+    ...(b.vibes||[]),
+    b.facts?.pace,
+    b.facts?.pages ? `${b.facts.pages}p` : null,
+    b.facts?.year ? `Since ${b.facts.year}` : null,
+    ...(b.tags||[])
+  ].filter(Boolean);
+
+  const coverHTML = b.image
+    ? `<div class="cover"><img src="${b.image}" alt="Cover of ${escapeHtml(b.title)}"></div>`
+    : `<div class="cover" aria-hidden="true">${b.title.slice(0,1)}</div>`;
+
+  el.innerHTML = `
+    ${coverHTML}
+    <div>
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <div>
+          <div class="muted">Match score: <b>${Math.round(score(b)*10)/10}</b></div>
+          ${b.gold?'<span class="chip" style="background:#fff7cc;border-color:#E7C200">⭐ Featured</span>':''}
+        </div>
+        <div class="badge gold" id="ptsTop">${state.pts} pts</div>
+      </div>
+      <h2 style="margin:6px 0 4px">${escapeHtml(b.title)}</h2>
+      <div class="muted">by ${escapeHtml(b.author)}</div>
+      <div class="chips">${chips.map(c=>`<span class="chip">${escapeHtml(c)}</span>`).join('')}</div>
+      <div class="actions">
+        <button class="btn" onclick="pass()">Not for me</button>
+        <button class="btn gold" onclick="saveBook('${b.id}')">Save (+5)</button>
+      </div>
+      <div class="divider"></div>
+      <div class="author">
+        <b>Author</b> · <span class="muted">${escapeHtml(b.author)}</span>
+        ${b.links?.site?`· <a class="link" href="${b.links.site}">Website</a>`:''}
+        ${b.links?.buy?`· <a class="link" href="${b.links.buy}">Buy</a>`:''}
+      </div>
+    </div>
+  `;
+
+  if(!b.image && !b._coverRequested){
+    b._coverRequested = true;
+    resolveCover(b).then(url=>{
+      if(url){
+        b.image = url;
+        el.querySelector(".cover").innerHTML =
+          `<img src="${url}" alt="Cover of ${escapeHtml(b.title)}">`;
+      }
+    });
+  }
+}
   /** Actions **/
   function pass(){ state.order.push(state.order.shift()); show(0); }
 
@@ -270,6 +285,36 @@
 
   /** Utils **/
   function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
+<script>
+  // … keep your existing Utils like escapeHtml …
+
+  // Try Google Books first (title + author), fallback to Open Library if you add ISBN later
+  async function resolveCover(book){
+    // 1) Google Books search by title + author
+    try{
+      const q = encodeURIComponent(`intitle:${book.title} inauthor:${book.author}`);
+      const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1`);
+      if(res.ok){
+        const data = await res.json();
+        const img = data?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail
+                 || data?.items?.[0]?.volumeInfo?.imageLinks?.smallThumbnail;
+        if(img) return img.replace('http://','https://'); // ensure https
+      }
+    }catch(e){ /* ignore */ }
+
+    // 2) Open Library by ISBN (if you add book.isbn)
+    if(book.isbn){
+      const url = `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg`;
+      // quick check if it exists
+      try{
+        const head = await fetch(url, { method:'HEAD' });
+        if(head.ok) return url;
+      }catch(e){ /* ignore */ }
+    }
+
+    // no luck
+    return null;
+  }
 </script>
 </body>
 </html>
