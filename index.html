@@ -37,7 +37,7 @@
   .swipe{display:grid;grid-template-columns:180px 1fr;gap:16px}
   @media (max-width:720px){.swipe{grid-template-columns:1fr}}
   .cover{width:100%;aspect-ratio:2/3;border-radius:10px;overflow:hidden;background:#ddd;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:48px}
-.cover img{width:100%;height:100%;object-fit:cover;display:block}
+  .cover img{width:100%;height:100%;object-fit:cover;display:block}
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
   .chip{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fafafa;font-size:13px}
   .actions{display:flex;gap:10px;margin-top:12px}
@@ -45,13 +45,16 @@
   .author{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
   .link{color:#0a66c2;text-decoration:none}
   .list{display:flex;flex-direction:column;gap:8px}
+
   /* Swipe interactions */
-.card-gesture{ position:relative; touch-action: pan-y; user-select:none; will-change: transform; }
-.badge-swipe{ position:absolute; top:10px; padding:6px 10px; border-radius:8px; font-weight:700; border:2px solid; background:rgba(255,255,255,.9); opacity:0; transition:opacity .15s ease; }
-.badge-swipe.like{ left:10px; color:#0a6a0a; border-color:#0a6a0a; }
-.badge-swipe.nope{ right:10px; color:#cc1b1b; border-color:#cc1b1b; }
-.field{width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; font:inherit}
-.note{min-height:20px}
+  .card-gesture{ position:relative; touch-action: pan-y; user-select:none; will-change: transform; }
+  .badge-swipe{ position:absolute; top:10px; padding:6px 10px; border-radius:8px; font-weight:700; border:2px solid; background:rgba(255,255,255,.9); opacity:0; transition:opacity .15s ease; }
+  .badge-swipe.like{ left:10px; color:#0a6a0a; border-color:#0a6a0a; }
+  .badge-swipe.nope{ right:10px; color:#cc1b1b; border-color:#cc1b1b; }
+
+  /* Inputs */
+  .field{width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; font:inherit}
+  .note{min-height:20px}
 </style>
 </head>
 <body>
@@ -66,19 +69,19 @@
       <h2>Your Profile</h2>
 
       <div class="row">
-  <label class="lbl">Mood Now</label>
-  <div id="moodNowLevel" class="pills" aria-label="How you feel right now"></div>
-</div>
+        <label class="lbl">Mood Now</label>
+        <div id="moodNowLevel" class="pills" aria-label="How you feel right now"></div>
+      </div>
 
-<div class="row">
-  <label class="lbl">Desired Read</label>
-  <div id="desiredRead" class="pills" aria-label="What vibe you want from a book"></div>
-</div>
+      <div class="row">
+        <label class="lbl">Desired Read</label>
+        <div id="desiredRead" class="pills" aria-label="What vibe you want from a book"></div>
+      </div>
 
-<div class="row">
-  <label class="lbl">Mood After</label>
-  <div id="moodAfterLevel" class="pills" aria-label="How you feel after reading"></div>
-</div>
+      <div class="row">
+        <label class="lbl">Mood After</label>
+        <div id="moodAfterLevel" class="pills" aria-label="How you feel after reading"></div>
+      </div>
 
       <div class="muted">Tip: your choices power the matches below.</div>
     </section>
@@ -88,18 +91,21 @@
       <h2>Discover</h2>
       <div id="swipe" class="swipe"></div>
     </section>
-<section class="card">
-  <h2>Share Your Story</h2>
-  <div class="muted" style="margin-bottom:8px">
-    Tell us what changed for you after reading. Earn points when you share authentically.
-  </div>
-  <textarea id="reflectionText" class="field" rows="4" placeholder="What shifted for you? Any aha, laugh, calm moment…"></textarea>
-  <div class="actions" style="margin-top:10px">
-    <button class="btn" onclick="resetReflection()">Reset</button>
-    <button class="btn gold" onclick="submitReflection()">Save reflection</button>
-  </div>
-  <div id="reflectionNote" class="note muted" style="margin-top:8px"></div>
-</section>
+
+    <!-- Share story -->
+    <section class="card">
+      <h2>Share Your Story</h2>
+      <div class="muted" style="margin-bottom:8px">
+        Tell us what changed for you after reading. Earn points when you share authentically.
+      </div>
+      <textarea id="reflectionText" class="field" rows="4" placeholder="What shifted for you? Any aha, laugh, calm moment…"></textarea>
+      <div class="actions" style="margin-top:10px">
+        <button class="btn" onclick="resetReflection()">Reset</button>
+        <button class="btn gold" onclick="submitReflection()">Save reflection</button>
+      </div>
+      <div id="reflectionNote" class="note muted" style="margin-top:8px"></div>
+    </section>
+
     <!-- Bookshelf -->
     <section class="card">
       <h2>Your Bookshelf</h2>
@@ -109,28 +115,14 @@
 
 <!-- Inline JS so it ALWAYS runs -->
 <script>
-  /** Reader inputs (expanded) **/
-  const MOODS = [
-    "Tired","Lonely","Overwhelmed","Stressed","Anxious","Curious","Distracted",
-    "Lost","Sad","Restless","Angry","Bored","Unfocused","Empty","Hopeful",
-    "Grateful","Inspired","Excited","Joyful","Calm","Grounded","Confident",
-    "Chill","Playful","Reflective"
+  /* Simple categories */
+  const LEVELS = ["Low","Medium","High"];
+  const DESIRED_READ = [
+    "Restful","Reflective","Insightful","Empowering","Inspiring","Uplifting",
+    "Comedic","Silly","Intriguing","Arousing","Self-loving","Educational"
   ];
 
-  const DESIRED = [
-    "Energized","Motivated","Empowered","Peaceful","Connected","Comforted",
-    "Entertained","Playful","Curious","Optimistic","Brave","Creative","Resilient",
-    "Romantic","Compassionate","Mindful","Uplifted","Adventurous","Free",
-    "Reflective","Grateful","Focused","Inspired","Chill","Laugh-out-loud",
-    "Mindset-shifting"
-  ];
-
-  // Capitalized + Physical
-  const GROWTH = ["Mental","Physical","Spiritual","Emotional","Functional","Financial","Social"];
-
-  /** Book catalog
-   *  Use 'vibes' (how the book FEELS) + 'facts' + optional 'tags'
-   */
+  /* Book catalog (vibes + facts + tags) */
   const BOOKS = [
     {
       id:"rid",
@@ -162,27 +154,27 @@
     }
   ];
 
-  /** App state **/
+  /* App state */
   const state = {
-    moodNow: new Set(),
-    desired: new Set(),
-    growth: new Set(), // not used in scoring yet; reserved for later filters/missions
+    moodNowLevel: null,              // "Low" | "Medium" | "High"
+    desiredRead: new Set(),          // choose 1–3 categories
+    moodAfterLevel: null,
     pts: Number(localStorage.getItem("bh_pts")||0),
     shelf: JSON.parse(localStorage.getItem("bh_shelf")||"[]"),
     order: []
   };
 
-  /** Init **/
+  /* Init */
   document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("pts").textContent = state.pts + " pts";
-    renderPills("moodNow", MOODS, state.moodNow);
-    renderPills("desired", DESIRED, state.desired);
-    renderPills("growth", GROWTH, state.growth);
+    renderPillsSingle("moodNowLevel", LEVELS, (v)=>{ state.moodNowLevel=v; refreshMatches(); });
+    renderPills("desiredRead", DESIRED_READ, state.desiredRead);
+    renderPillsSingle("moodAfterLevel", LEVELS, (v)=>{ state.moodAfterLevel=v; });
     renderShelf();
     refreshMatches();
   });
 
-  /** UI helpers **/
+  /* Render helpers */
   function renderPills(containerId, items, set){
     const box = document.getElementById(containerId);
     box.innerHTML = "";
@@ -199,14 +191,59 @@
     });
   }
 
-  /** Matching
-   *  Strongly weight Desired Mood vs. book vibes, lightly weight Mood Now.
-   */
+  function renderPillsSingle(containerId, items, onPick){
+    const box = document.getElementById(containerId);
+    box.innerHTML = "";
+    let current = null;
+    items.forEach(name=>{
+      const b = document.createElement("button");
+      b.className = "pill";
+      b.textContent = name;
+      b.addEventListener("click", ()=>{
+        if(current===name){ current=null; b.classList.remove("on"); onPick(null); return; }
+        current = name;
+        [...box.children].forEach(ch=>ch.classList.remove("on"));
+        b.classList.add("on");
+        onPick(name);
+      });
+      box.appendChild(b);
+    });
+  }
+
+  function vibesFor(desired){
+    const d = (desired||"").toLowerCase();
+    if(d==="restful")      return ["Calm","Cozy","Chill","Comforted","Soothing","Gentle"];
+    if(d==="reflective")   return ["Reflective","Mindful","Thoughtful","Introspective"];
+    if(d==="insightful")   return ["Insightful","Wise","Practical","Aha","Mindset-shifting"];
+    if(d==="empowering")   return ["Empowering","Confident","Motivated","Strong"];
+    if(d==="inspiring")    return ["Inspiring","Inspired","Hopeful","Uplifted"];
+    if(d==="uplifting")    return ["Uplifting","Joyful","Feel-good","Positive"];
+    if(d==="comedic")      return ["Funny","Witty","Humorous","Laugh-out-loud","Satirical"];
+    if(d==="silly")        return ["Silly","Absurd","Ridiculous","Playful"];
+    if(d==="intriguing")   return ["Intriguing","Mysterious","Curious","Page-turning"];
+    if(d==="arousing")     return ["Romantic","Sensual","Flirty"];
+    if(d==="self-loving")  return ["Self-loving","Healing","Compassionate","Acceptance"];
+    if(d==="educational")  return ["Educational","Practical","How-to","Skill"];
+    return [];
+  }
+
+  /* Matching */
   function score(b){
-    const inter = (arr,set)=>arr.filter(x=>set.has(x)).length;
-    let s = inter(b.vibes||[], state.desired)*1.4 +
-            inter(b.vibes||[], state.moodNow)*0.6;
-    if(b.gold) s += 2.5; // Featured
+    const want = [...state.desiredRead].flatMap(v=>vibesFor(v));
+    const inter = (arr, setOrArray) => {
+      const set = Array.isArray(setOrArray) ? new Set(setOrArray) : setOrArray;
+      return (arr||[]).filter(x=>set.has(x)).length;
+    };
+
+    let s = inter(b.vibes||[], new Set(want)) * 1.6;
+
+    // Extra softness if current mood is Low and the book is restful
+    if(state.moodNowLevel==="Low"){
+      const soothe = new Set(vibesFor("Restful"));
+      s += inter(b.vibes||[], soothe) * 0.4;
+    }
+
+    if(b.gold) s += 2.0; // ⭐ Featured boost
     return s;
   }
 
@@ -214,129 +251,114 @@
     state.order = [...BOOKS].sort((a,b)=>score(b)-score(a));
     show(0);
   }
-  
+
   function show(idx){
-  if(state.order.length===0){
-    document.getElementById("swipe").innerHTML='<div class="muted">No books yet.</div>';
-    return;
-  }
-  const b = state.order[idx%state.order.length];
-  const el = document.getElementById("swipe");
+    if(state.order.length===0){
+      document.getElementById("swipe").innerHTML='<div class="muted">No books yet.</div>';
+      return;
+    }
+    const b = state.order[idx%state.order.length];
+    const el = document.getElementById("swipe");
 
-  const chips = [
-    ...(b.vibes||[]),
-    b.facts?.pace,
-    b.facts?.pages ? `${b.facts.pages}p` : null,
-    b.facts?.year ? `Since ${b.facts.year}` : null,
-    ...(b.tags||[])
-  ].filter(Boolean);
+    const chips = [
+      ...(b.vibes||[]),
+      b.facts?.pace,
+      b.facts?.pages ? `${b.facts.pages}p` : null,
+      b.facts?.year ? `Since ${b.facts.year}` : null,
+      ...(b.tags||[])
+    ].filter(Boolean);
 
-  const coverHTML = b.image
-    ? `<div class="cover"><img src="${b.image}" alt="Cover of ${escapeHtml(b.title)}"></div>`
-    : `<div class="cover" aria-hidden="true">${b.title.slice(0,1)}</div>`;
+    const coverHTML = b.image
+      ? `<div class="cover"><img src="${b.image}" alt="Cover of ${escapeHtml(b.title)}"></div>`
+      : `<div class="cover" aria-hidden="true">${b.title.slice(0,1)}</div>`;
 
-  el.innerHTML = 
-    addSwipe(document.getElementById('card'), ()=>pass(), ()=>saveBook(b.id));`
-  <div id="card" class="card-gesture swipe">
-    ${coverHTML}
-    <div>
-      <div class="row" style="justify-content:space-between;align-items:center">
+    el.innerHTML = `
+      <div id="card" class="card-gesture swipe">
+        ${coverHTML}
         <div>
-          <div class="muted">Match score: <b>${Math.round(score(b)*10)/10}</b></div>
-          ${b.gold?'<span class="chip" style="background:#fff7cc;border-color:#E7C200">⭐ Featured</span>':''}
+          <div class="row" style="justify-content:space-between;align-items:center">
+            <div>
+              <div class="muted">Match score: <b>${Math.round(score(b)*10)/10}</b></div>
+              ${b.gold?'<span class="chip" style="background:#fff7cc;border-color:#E7C200">⭐ Featured</span>':''}
+            </div>
+            <div class="badge gold" id="ptsTop">${state.pts} pts</div>
+          </div>
+          <h2 style="margin:6px 0 4px">${escapeHtml(b.title)}</h2>
+          <div class="muted">by ${escapeHtml(b.author)}</div>
+          <div class="chips">${chips.map(c=>`<span class="chip">${escapeHtml(c)}</span>`).join('')}</div>
+          <div class="actions">
+            <button class="btn" onclick="pass()">Not for me</button>
+            <button class="btn gold" onclick="saveBook('${b.id}')">Save (+5)</button>
+          </div>
+          <div class="divider"></div>
+          <div class="author">
+            <b>Author</b> · <span class="muted">${escapeHtml(b.author)}</span>
+            ${b.links?.site?`· <a class="link" href="${b.links.site}">Website</a>`:''}
+            ${b.links?.buy?`· <a class="link" href="${b.links.buy}">Buy</a>`:''}
+          </div>
         </div>
-        <div class="badge gold" id="ptsTop">${state.pts} pts</div>
-      </div>
-      <h2 style="margin:6px 0 4px">${escapeHtml(b.title)}</h2>
-      <div class="muted">by ${escapeHtml(b.author)}</div>
-      <div class="chips">${chips.map(c=>`<span class="chip">${escapeHtml(c)}</span>`).join('')}</div>
-      <div class="actions">
-        <button class="btn" onclick="pass()">Not for me</button>
-        <button class="btn gold" onclick="saveBook('${b.id}')">Save (+5)</button>
-      </div>
-      <div class="divider"></div>
-      <div class="author">
-        <b>Author</b> · <span class="muted">${escapeHtml(b.author)}</span>
-        ${b.links?.site?`· <a class="link" href="${b.links.site}">Website</a>`:''}
-        ${b.links?.buy?`· <a class="link" href="${b.links.buy}">Buy</a>`:''}
-      </div>
-    </div>
 
-    <!-- swipe helper badges -->
-    <span class="badge-swipe like">SAVE</span>
-    <span class="badge-swipe nope">NOPE</span>
-  </div>
-`;
-          <div class="muted">Match score: <b>${Math.round(score(b)*10)/10}</b></div>
-          ${b.gold?'<span class="chip" style="background:#fff7cc;border-color:#E7C200">⭐ Featured</span>':''}
-        </div>
-        <div class="badge gold" id="ptsTop">${state.pts} pts</div>
+        <span class="badge-swipe like">SAVE</span>
+        <span class="badge-swipe nope">NOPE</span>
       </div>
-      <h2 style="margin:6px 0 4px">${escapeHtml(b.title)}</h2>
-      <div class="muted">by ${escapeHtml(b.author)}</div>
-      <div class="chips">${chips.map(c=>`<span class="chip">${escapeHtml(c)}</span>`).join('')}</div>
-      <div class="actions">
-        <button class="btn" onclick="pass()">Not for me</button>
-        <button class="btn gold" onclick="saveBook('${b.id}')">Save (+5)</button>
-      </div>
-      <div class="divider"></div>
-      <div class="author">
-        <b>Author</b> · <span class="muted">${escapeHtml(b.author)}</span>
-        ${b.links?.site?`· <a class="link" href="${b.links.site}">Website</a>`:''}
-        ${b.links?.buy?`· <a class="link" href="${b.links.buy}">Buy</a>`:''}
-      </div>
-    </div>
-  `;
+    `;
 
-  if(!b.image && !b._coverRequested){
-    b._coverRequested = true;
-    resolveCover(b).then(url=>{
-      if(url){
-        b.image = url;
-        el.querySelector(".cover").innerHTML =
-          `<img src="${url}" alt="Cover of ${escapeHtml(b.title)}">`;
-      }
-    });
+    // make the card draggable
+    addSwipe(document.getElementById('card'), ()=>pass(), ()=>saveBook(b.id));
+
+    // auto-fetch cover if missing
+    if(!b.image && !b._coverRequested){
+      b._coverRequested = true;
+      resolveCover(b).then(url=>{
+        if(url){
+          b.image = url;
+          const imgWrap = el.querySelector(".cover");
+          if(imgWrap){
+            imgWrap.innerHTML = `<img src="${url}" alt="Cover of ${escapeHtml(b.title)}">`;
+          }
+        }
+      });
+    }
   }
-}
-function addSwipe(el, onLeft, onRight){
-  let startX = 0, dx = 0, dragging = false;
-  const threshold = 80;
-  const like = el.querySelector('.badge-swipe.like');
-  const nope = el.querySelector('.badge-swipe.nope');
 
-  const onDown = (e)=>{ dragging = true; startX = e.clientX ?? e.touches?.[0]?.clientX; el.style.transition=''; };
-  const onMove = (e)=>{
-    if(!dragging) return;
-    const x = e.clientX ?? e.touches?.[0]?.clientX;
-    dx = x - startX;
-    const rot = dx/12;
-    el.style.transform = `translateX(${dx}px) rotate(${rot}deg)`;
-    const a = Math.min(1, Math.abs(dx)/120);
-    if(dx>0){ if(like){ like.style.opacity = a; } if(nope){ nope.style.opacity = 0; } }
-    else    { if(nope){ nope.style.opacity = a; } if(like){ like.style.opacity = 0; } }
-  };
-  const snap = ()=>{
-    el.style.transition = 'transform .2s ease';
-    el.style.transform = 'translateX(0) rotate(0)';
-    if(like) like.style.opacity = 0;
-    if(nope) nope.style.opacity = 0;
-  };
-  const onUp = ()=>{
-    if(!dragging) return;
-    dragging = false;
-    if(dx >  threshold){ el.style.transition='transform .2s ease'; el.style.transform='translateX(500px) rotate(15deg)'; setTimeout(onRight, 160); }
-    else if(dx < -threshold){ el.style.transition='transform .2s ease'; el.style.transform='translateX(-500px) rotate(-15deg)'; setTimeout(onLeft, 160); }
-    else snap();
-  };
+  function addSwipe(el, onLeft, onRight){
+    let startX = 0, dx = 0, dragging = false;
+    const threshold = 80;
+    const like = el.querySelector('.badge-swipe.like');
+    const nope = el.querySelector('.badge-swipe.nope');
 
-  // Pointer events cover mouse, pen, and touch on iPad Safari
-  el.addEventListener('pointerdown', onDown);
-  el.addEventListener('pointermove', onMove);
-  el.addEventListener('pointerup', onUp);
-  el.addEventListener('pointercancel', onUp);
-}
-  /** Actions **/
+    const onDown = (e)=>{ dragging = true; startX = e.clientX ?? e.touches?.[0]?.clientX; el.style.transition=''; };
+    const onMove = (e)=>{
+      if(!dragging) return;
+      const x = e.clientX ?? e.touches?.[0]?.clientX;
+      dx = x - startX;
+      const rot = dx/12;
+      el.style.transform = `translateX(${dx}px) rotate(${rot}deg)`;
+      const a = Math.min(1, Math.abs(dx)/120);
+      if(dx>0){ if(like){ like.style.opacity = a; } if(nope){ nope.style.opacity = 0; } }
+      else    { if(nope){ nope.style.opacity = a; } if(like){ like.style.opacity = 0; } }
+    };
+    const snap = ()=>{
+      el.style.transition = 'transform .2s ease';
+      el.style.transform = 'translateX(0) rotate(0)';
+      if(like) like.style.opacity = 0;
+      if(nope) nope.style.opacity = 0;
+    };
+    const onUp = ()=>{
+      if(!dragging) return;
+      dragging = false;
+      if(dx >  threshold){ el.style.transition='transform .2s ease'; el.style.transform='translateX(500px) rotate(15deg)'; setTimeout(onRight, 160); }
+      else if(dx < -threshold){ el.style.transition='transform .2s ease'; el.style.transform='translateX(-500px) rotate(-15deg)'; setTimeout(onLeft, 160); }
+      else snap();
+    };
+
+    el.addEventListener('pointerdown', onDown);
+    el.addEventListener('pointermove', onMove);
+    el.addEventListener('pointerup', onUp);
+    el.addEventListener('pointercancel', onUp);
+  }
+
+  /* Actions */
   function pass(){ state.order.push(state.order.shift()); show(0); }
 
   function saveBook(id){
@@ -365,34 +387,57 @@ function addSwipe(el, onLeft, onRight){
     const top = document.getElementById("ptsTop"); if(top) top.textContent = state.pts + " pts";
   }
 
-  /** Utils **/
-async function resolveCover(book){
-  // Try Google Books first (search by title + author)
-  try {
-    const q = encodeURIComponent(`intitle:${book.title} inauthor:${book.author}`);
-    const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1`);
-    if(res.ok){
-      const data = await res.json();
-      const img = data?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail
-               || data?.items?.[0]?.volumeInfo?.imageLinks?.smallThumbnail;
-      if(img) return img.replace('http://','https://'); // force HTTPS
-    }
-  } catch(e) {
-    console.warn("Google Books lookup failed", e);
+  /* Reflection points */
+  function resetReflection(){
+    document.getElementById("reflectionText").value = "";
+    document.getElementById("reflectionNote").textContent = "";
   }
 
-  // Fallback: Open Library (if you add ISBN to your book object)
-  if(book.isbn){
-    const url = `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg`;
+  function submitReflection(){
+    const note = document.getElementById("reflectionNote");
+    const txt = (document.getElementById("reflectionText").value || "").trim();
+
+    let points = 0;
+    if(txt.length >= 1) points += 5;
+    if(txt.length >= 40) points += 5;
+
+    const idx = v => v ? ["Low","Medium","High"].indexOf(v) : -1;
+    const before = idx(state.moodNowLevel);
+    const after  = idx(state.moodAfterLevel);
+    if(after > before && before >= 0) points += 10;
+
+    if(points>0){
+      addPts(points);
+      note.textContent = `Nice! You earned +${points} pts for your reflection.`;
+    }else{
+      note.textContent = "Add a few words and set Mood Now/After to earn points.";
+    }
+  }
+
+  /* Utils */
+  async function resolveCover(book){
     try {
-      const head = await fetch(url, { method:'HEAD' });
-      if(head.ok) return url;
-    } catch(e) {
-      console.warn("Open Library lookup failed", e);
+      const q = encodeURIComponent(`intitle:${book.title} inauthor:${book.author}`);
+      const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1`);
+      if(res.ok){
+        const data = await res.json();
+        const img = data?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail
+                 || data?.items?.[0]?.volumeInfo?.imageLinks?.smallThumbnail;
+        if(img) return img.replace('http://','https://');
+      }
+    } catch(e) { /* ignore */ }
+
+    if(book.isbn){
+      const url = `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg`;
+      try {
+        const head = await fetch(url, { method:'HEAD' });
+        if(head.ok) return url;
+      } catch(e) { /* ignore */ }
     }
+    return null;
   }
 
-  // If nothing worked, return null
-  return null;
-}
+  function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
+</script>
+</body>
 </html>
