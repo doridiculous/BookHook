@@ -1,0 +1,17 @@
+/* style.css — the "clothes" for your app */
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background-color: #fdfdfd;
+  margin: 0;
+  padding: 0;
+}
+
+h1 {
+  color: #d94f04; /* bright orange-red */
+}
+
+p {
+  font-size: 18px;
+  color: #333;
+}
