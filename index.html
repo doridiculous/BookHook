@@ -1,14 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>BookHook</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Hello, BookHook!</h1>
-  <p>If you can read this, GitHub Pages is working 🎉</p>
-  <script src="script.js"></script>
+  <header class="bar">
+    <div class="brand"><span class="dot"></span><span>BookHook</span></div>
+    <div class="status"><span id="tier" class="badge">Bronze</span><span id="pts" class="badge gold">0 pts</span></div>
+  </header>
+
+  <main class="wrap">
+    <!-- Your Profile -->
+    <section class="card">
+      <h2>Your Profile</h2>
+
+      <div class="row">
+        <label class="lbl">Mood now</label>
+        <div id="moodNow" class="pills" aria-label="Select your current mood"></div>
+      </div>
+
+      <div class="row">
+        <label class="lbl">Desired emotions</label>
+        <div id="desired" class="pills" aria-label="Select desired emotions"></div>
+      </div>
+
+      <div class="row">
+        <label class="lbl">Growth categories</label>
+        <div id="growth" class="pills" aria-label="Select growth areas"></div>
+      </div>
+
+      <div class="hint">Tip: these choices will power your book matches next.</div>
+    </section>
+
+    <!-- Preview summary -->
+    <section class="card">
+      <h2>Summary</h2>
+      <p id="summary" class="muted">Pick some moods and categories above.</p>
+      <button id="next" class="btn primary">Looks good → Next step</button>
+    </section>
+  </main>
+
+  <script src="script.js" defer></script>
 </body>
 </html>
