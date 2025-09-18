@@ -942,7 +942,6 @@ async function resolveCover(book){
 function persist(k,v){ localStorage.setItem(k, typeof v==='string'?v:JSON.stringify(v)); }
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
 function cssId(s){return s.replace(/\s+/g,'_').replace(/[^\w\-]/g,'');}
-</script>
   /* ==== HOTFIX: keep book tags horizontal ==== */
 .chips{
   display:flex !important;
@@ -956,5 +955,6 @@ function cssId(s){return s.replace(/\s+/g,'_').replace(/[^\w\-]/g,'');}
   white-space:nowrap !important;   /* each pill stays on one line */
 }
 .chips br{ display:none !important; }  /* in case <br> snuck in */
+</script>
 </body>
 </html>
