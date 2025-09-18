@@ -412,23 +412,37 @@ function addSwipe(el,onLeft,onRight){
 }
 
 /*************** Shelf ***************/
-function markShelf(id,status){
-  const b=BOOKS.find(x=>x.id===id); if(!b) return;
-  const ex=state.shelf.find(x=>x.id===id);
-  if(ex){ex.status=status;} else {state.shelf.unshift({id:b.id,title:b.title,author:b.author,image:b.image,status});}
-  localStorage.setItem('bh_shelf',JSON.stringify(state.shelf));
-  addPts(status==='want'?5:7); renderShelf();
-  state.order.push(state.order.shift()); show(0);
-}
 function renderShelf(){
-  const box=$('#shelfList'); if(!box) return;
-  if(!state.shelf.length){ box.innerHTML=''; return; }
-  box.innerHTML=state.shelf.map(b=>`
-    <div class="tile">
-      <div class="thumb">${b.image?`<img src="${b.image}" alt="">`:''}</div>
-      <div><div><b>${escapeHtml(b.title)}</b></div><div class="muted">by ${escapeHtml(b.author)}</div></div>
-      <div class="stat ${b.status}">${b.status}</div>
-    </div>`).join('');
+  const box = document.getElementById('shelfList');
+  if(!box) return;
+
+  if(!state.shelf.length){
+    box.innerHTML = '';
+    return;
+  }
+
+  box.innerHTML = state.shelf.map(b=>{
+    const cover = b.image
+      ? `<img src="${b.image}" alt="">`
+      : ''; // if still no image, empty box (we’re prefetching covers above)
+    return `
+      <div class="tile">
+        <div class="thumb">${cover}</div>
+        <div>
+          <div class="title">${escapeHtml(b.title)}</div>
+          <div class="meta">by ${escapeHtml(b.author)}</div>
+        </div>
+        <div class="actions">
+          <select class="statselect" onchange="updateShelfStatus('${b.id}', this.value)">
+            <option value="want" ${b.status==='want'?'selected':''}>Want</option>
+            <option value="reading" ${b.status==='reading'?'selected':''}>Reading</option>
+            <option value="read" ${b.status==='read'?'selected':''}>Read</option>
+          </select>
+          <button class="btn gold" onclick="markRead('${b.id}')">Mark read</button>
+          <button class="btn" onclick="removeFromShelf('${b.id}')">Remove</button>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 /*************** HookMarks ***************/
