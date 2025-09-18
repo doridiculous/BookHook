@@ -4,740 +4,377 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>BookHook</title>
-
 <style>
-  :root{
-    --bg:#fff; --fg:#111; --muted:#666;
-    --line:#ececec; --card:#fff; --pill:#f6f6f6;
-    --accent:#000; --accentfg:#fff; --gold:#E7C200;
-    --good:#0a6a0a; --bad:#cc1b1b;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--fg);background:#fafafa}
-  .bar{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff}
-  .brand{display:flex;gap:8px;align-items:center;font-weight:700}
-  .dot{width:18px;height:18px;border-radius:6px;background:#000;display:inline-block}
-  .status{display:flex;gap:8px;align-items:center}
-  .badge{padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:#fafafa;font-weight:600;font-size:12px}
-  .badge.gold{background:#fff7cc;border-color:#E7C200}
-  .wrap{max-width:780px;margin:0 auto;padding:18px 14px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin:12px 0;box-shadow:0 1px 10px rgba(0,0,0,.04)}
-  h1,h2{margin:0 0 10px}
-  h2.title{font-size:28px;line-height:1.2;margin:8px 0 6px}
-  .authorline{color:var(--muted);margin:0 0 10px}
-  .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
-  .lbl{min-width:120px;color:var(--muted)}
-  .pills{display:flex;flex-wrap:wrap;gap:8px}
-  .pill{padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#f6f6f6;cursor:pointer}
-  .pill.on{background:#000;color:#fff;border-color:#000}
-  .btn{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:600;min-width:120px}
-  .btn.primary{background:var(--accent);color:var(--accentfg)}
-  .btn.gold{background:var(--gold);border-color:#caa900;color:#000}
-  .muted{color:var(--muted);font-size:14px}
-  .field{width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; font:inherit}
-  .note{min-height:20px}
+:root{
+  --bg:#fafafa; --fg:#111; --muted:#666;
+  --line:#ececec; --card:#fff; --pill:#f6f6f6;
+  --accent:#000; --accentfg:#fff; --gold:#E7C200;
+  --good:#0a6a0a; --info:#0a66c2; --warn:#cc8a00; --bad:#cc1b1b;
+}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--fg);background:var(--bg)}
+.bar{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff}
+.brand{display:flex;gap:8px;align-items:center;font-weight:700}
+.dot{width:18px;height:18px;border-radius:6px;background:#000;display:inline-block}
+.status{display:flex;gap:8px;align-items:center}
+.badge{padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:#fafafa;font-weight:600;font-size:12px}
+.badge.gold{background:#fff7cc;border-color:#E7C200}
+.wrap{max-width:820px;margin:0 auto;padding:18px 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin:12px 0;box-shadow:0 1px 10px rgba(0,0,0,.04)}
+h1,h2{margin:0 0 10px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.lbl{min-width:120px;color:var(--muted)}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#f6f6f6;cursor:pointer}
+.pill.on{background:#000;color:#fff;border-color:#000}
+.btn{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:600}
+.btn.good{background:var(--good);color:#fff;border-color:var(--good)}
+.btn.info{background:#e8f3ff;color:#0a3d7e;border-color:#bcdcff}
+.btn.warn{background:#ffe9b3;color:#422d00;border-color:#ffd35c}
+.btn.ghost{background:#fff;border-color:#ddd}
+.muted{color:var(--muted);font-size:14px}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#111;color:#fff;padding:10px 14px;border-radius:10px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
 
-  /* Tabs */
-  .tabs{display:flex;gap:8px;margin:8px 0}
-  .tab{padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#f6f6f6;cursor:pointer}
-  .tab.on{background:#000;color:#fff;border-color:#000}
+/* Swipe card */
+.swipe{display:grid;grid-template-columns:240px 1fr;gap:16px;align-items:start}
+@media (max-width:720px){.swipe{grid-template-columns:1fr}}
+.cover{width:100%;aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,#eee,#dcdcdc);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.08),0 1px 0 rgba(0,0,0,.04)}
+.cover img{width:100%;height:100%;object-fit:cover;display:block}
+.title{font-size:24px;line-height:1.25;margin:6px 0 6px}
+.authorline{color:var(--muted);margin:0 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{padding:5px 9px;border:1px solid var(--line);border-radius:999px;background:#f7f7f7;font-size:12px}
+.kpis{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.kpi{font-size:12px;padding:5px 9px;border:1px dashed var(--line);border-radius:999px;background:#fff}
+.divider{height:1px;background:var(--line);margin:12px 0}
+.author{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.link{color:#0a66c2;text-decoration:none}
+.rightMeta{display:flex;align-items:center;gap:8px}
 
-  /* Search grid */
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-  .tile{border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff}
-  .tile .cover{aspect-ratio:2/3;border-radius:8px;overflow:hidden;background:#eee;margin-bottom:8px}
-  .tile .cover img{width:100%;height:100%;object-fit:cover;display:block}
-  .tile h4{margin:4px 0 2px;font-size:14px}
-  .tile .muted{font-size:12px}
+/* Swipe interactions + hint */
+.card-gesture{ position:relative; touch-action: pan-y; user-select:none; will-change: transform; }
+.badge-swipe{ position:absolute; top:10px; padding:6px 10px; border-radius:8px; font-weight:700; border:2px solid; background:rgba(255,255,255,.9); opacity:0; transition:opacity .15s ease; }
+.badge-swipe.want{ right:10px; color:#0a66c2; border-color:#0a66c2; }         /* LEFT  → Want */
+.badge-swipe.like{ left:10px; color:var(--good); border-color:var(--good); } /* RIGHT → Reading */
+.badge-swipe.read{ left:50%; transform:translateX(-50%); color:#444; border-color:#444;} /* UP → Read */
+.legend{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:#444;margin-top:6px}
+.legend span{padding:2px 6px;border:1px solid var(--line);border-radius:999px;background:#fff}
 
-  /* Swipe card */
-  .swipe{display:grid;grid-template-columns:240px 1fr;gap:16px;align-items:start}
-  @media (max-width:720px){.swipe{grid-template-columns:1fr}}
-  .cover{width:100%;aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,#eee,#dcdcdc);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:48px;box-shadow:0 6px 18px rgba(0,0,0,.08),0 1px 0 rgba(0,0,0,.04)}
-  .cover img{width:100%;height:100%;object-fit:cover;display:block}
-  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-  .chip{padding:5px 9px;border:1px solid var(--line);border-radius:999px;background:#f7f7f7;font-size:12px}
-  .kpis{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-  .kpi{font-size:12px;padding:5px 9px;border:1px dashed var(--line);border-radius:999px;background:#fff}
-  .divider{height:1px;background:var(--line);margin:16px 0}
-  .author{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-  .link{color:#0a66c2;text-decoration:none}
-  .rightMeta{display:flex;align-items:center;gap:8px}
-
-  /* Swipe interactions + hint */
-  .card-gesture{ position:relative; touch-action: pan-y; user-select:none; will-change: transform; }
-  .badge-swipe{ position:absolute; top:10px; padding:6px 10px; border-radius:8px; font-weight:700; border:2px solid; background:rgba(255,255,255,.9); opacity:0; transition:opacity .15s ease; }
-  .badge-swipe.like{ left:10px; color:var(--good); border-color:var(--good); }
-  .badge-swipe.nope{ right:10px; color:var(--bad); border-color:var(--bad); }
-  .hint{position:absolute; bottom:-10px; right:10px; font-size:12px; color:#444; display:flex; align-items:center; gap:6px; opacity:.85; animation: nudge 1.6s ease-in-out infinite}
-  .arrow{display:inline-block}
-  @keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}
-
-  /* Section headers inside Desired Read */
-  .subhead{font-weight:700;margin:12px 0 6px}
-
-  /* Modal */
-  .modalMask{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;padding:16px}
-  .modal{max-width:560px;width:100%;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
-  .modal h3{margin:0 0 10px}
-  .row.gap{gap:12px}
-  .check{display:flex;align-items:center;gap:8px;font-size:14px}
+/* Modal */
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;padding:16px}
+.modal{max-width:560px;width:100%;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
+.modal h3{margin:0 0 10px}
+.field{width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; font:inherit}
+select.field{height:40px}
+.tile-actions{display:flex;gap:6px;flex-wrap:wrap}
+.shelf{display:flex;flex-direction:column;gap:12px}
+.shelf .item{border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff;display:grid;grid-template-columns:56px 1fr;gap:10px}
+.shelf .item .thumb{width:56px;aspect-ratio:2/3;border-radius:6px;overflow:hidden;background:#eee}
+.shelf .item h4{margin:0 0 4px;font-size:15px}
+.small{font-size:12px;color:#555}
 </style>
 </head>
 <body>
-  <header class="bar">
-    <div class="brand"><span class="dot"></span><span>BookHook</span></div>
-    <div class="status"><span id="tier" class="badge">Bronze</span><span id="pts" class="badge gold">0 pts</span></div>
-  </header>
+<header class="bar">
+  <div class="brand"><span class="dot"></span><span>BookHook</span></div>
+  <div class="status"><span id="tier" class="badge">Bronze</span><span id="pts" class="badge gold">0 pts</span></div>
+</header>
 
-  <main class="wrap">
+<main class="wrap">
+  <!-- Swipe / Discover -->
+  <section class="card" id="swipeCard">
+    <h2>Discover</h2>
+    <div class="legend">
+      <span>⬅️ Want to read</span><span>➡️ Reading</span><span>⬆️ Already read (reflect)</span>
+    </div>
+    <div id="swipe" class="swipe"></div>
+  </section>
 
-    <!-- Reader / Author mini profiles -->
-    <section class="card">
-      <h2>Your Profiles</h2>
-      <div class="row">
-        <div class="tabs" role="tablist">
-          <button id="tabReader" class="tab on" onclick="setProfileTab('reader')">Reader</button>
-          <button id="tabAuthor" class="tab" onclick="setProfileTab('author')">Author</button>
-        </div>
-      </div>
+  <!-- Your Shelf -->
+  <section class="card">
+    <h2>Your Shelf</h2>
+    <div id="shelf" class="shelf"></div>
+  </section>
+</main>
 
-      <div id="readerProfile">
-        <div class="row"><span class="lbl">Books read</span><b id="stat_read">0</b></div>
-        <div class="row"><span class="lbl">Books reading</span><b id="stat_reading">0</b></div>
-        <div class="row"><span class="lbl">Want to read</span><b id="stat_want">0</b></div>
-        <div class="row"><span class="lbl">Reviewed</span><b id="stat_reviewed">0</b></div>
-      </div>
-
-      <div id="authorProfile" style="display:none">
-        <div class="row">
-          <label class="lbl">I’m an author</label>
-          <label class="check"><input id="isAuthor" type="checkbox" onchange="toggleAuthor(this.checked)"/> Enable author profile</label>
-        </div>
-        <div id="authorForm" style="display:none">
-          <div class="row"><label class="lbl">Pen name</label><input id="authorName" class="field" placeholder="e.g., A. Writer" oninput="saveAuthorName(this.value)"/></div>
-          <div class="row"><span class="lbl">Books written</span><b id="stat_written">0</b></div>
-          <div class="muted">Tip: later you’ll be able to add titles you’ve written and upload covers.</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Quick Add: Search + Read vs Want -->
-    <section class="card">
-      <h2>Add books you love or want</h2>
-      <div class="tabs" role="tablist">
-        <button id="tabRead" class="tab on" onclick="setSearchMode('read')">I read this</button>
-        <button id="tabWant" class="tab" onclick="setSearchMode('want')">I want to read</button>
-      </div>
-      <div class="row">
-        <input id="q" class="field" placeholder="Search title or author (e.g., Atomic Habits, Octavia Butler)" />
-        <button class="btn primary" onclick="doSearch()">Search</button>
-      </div>
-      <div id="searchResults" class="grid" aria-live="polite"></div>
-    </section>
-
-    <!-- Profile choices -->
-    <section class="card">
-      <h2>Your Preferences</h2>
-
-      <div class="row">
-        <label class="lbl">I am feeling…</label>
-        <input id="freeMood" class="field" placeholder="type a word (e.g., tired, curious, hyped)" oninput="mapFreeMood(this.value)" />
-      </div>
-
-      <div class="row">
-        <label class="lbl">Mood Now</label>
-        <div id="moodNowLevel" class="pills" aria-label="How you feel right now"></div>
-      </div>
-
-      <div class="row">
-        <label class="lbl">Desired Read</label>
-        <div style="width:100%">
-          <div class="subhead">Calm & Restore</div>
-          <div id="dr_calm" class="pills"></div>
-          <div class="subhead">Clarity & Growth</div>
-          <div id="dr_growth" class="pills"></div>
-          <div class="subhead">Energy & Uplift</div>
-          <div id="dr_energy" class="pills"></div>
-          <div class="subhead">Fun & Play</div>
-          <div id="dr_fun" class="pills"></div>
-          <div class="subhead">Deep & Intrigue</div>
-          <div id="dr_deep" class="pills"></div>
-        </div>
-      </div>
-
-      <div class="muted">Tip: your choices power the matches below.</div>
-    </section>
-
-    <!-- Discover / Swipe -->
-    <section class="card" id="swipeCard">
-      <h2>Discover</h2>
-      <div id="swipe" class="swipe"></div>
-    </section>
-
-    <!-- Share story (for read books only) -->
-    <section class="card">
-      <h2>Share Your Story (for books you finished)</h2>
-      <div class="muted" style="margin-bottom:8px">
-        Tell us what changed for you after reading. Earn points when you share authentically.
-      </div>
-      <div class="row">
-        <label class="lbl">Mood After</label>
-        <div id="moodAfterLevel" class="pills"></div>
-      </div>
-      <textarea id="reflectionText" class="field" rows="4" placeholder="Big takeaway? Mood shift? Any LOLs or AHAs?"></textarea>
-      <div class="actions" style="margin-top:10px">
-        <button class="btn" onclick="resetReflection()">Reset</button>
-        <button class="btn gold" onclick="submitReflection()">Save reflection</button>
-      </div>
-      <div id="reflectionNote" class="note muted" style="margin-top:8px"></div>
-    </section>
-
-    <!-- Bookshelf -->
-    <section class="card">
-      <h2>Your Bookshelf</h2>
-      <div class="row gap">
-        <div style="flex:1">
-          <h3>Want to read</h3>
-          <div id="list_want" class="list muted">Empty</div>
-        </div>
-        <div style="flex:1">
-          <h3>Reading</h3>
-          <div id="list_reading" class="list muted">Empty</div>
-        </div>
-        <div style="flex:1">
-          <h3>Read</h3>
-          <div id="list_read" class="list muted">Empty</div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- Save modal -->
-  <div id="saveMask" class="modalMask">
-    <div class="modal">
-      <h3>Save “<span id="sv_title"></span>”</h3>
-      <p class="muted" id="sv_author"></p>
-      <div class="tabs" role="tablist" style="margin-top:6px">
-        <button id="sv_tab_want" class="tab on" onclick="svSetMode('want')">Want to read</button>
-        <button id="sv_tab_reading" class="tab" onclick="svSetMode('reading')">Reading</button>
-        <button id="sv_tab_read" class="tab" onclick="svSetMode('read')">Already read</button>
-      </div>
-
-      <div id="sv_want">
-        <label class="check"><input type="checkbox" id="sv_chk_take"/> I’ll share my big takeaway</label>
-        <label class="check"><input type="checkbox" id="sv_chk_mood"/> I’ll report how it shifted my mood</label>
-        <label class="check"><input type="checkbox" id="sv_chk_lol"/> I’ll note any LOLs / AHAs</label>
-      </div>
-
-      <div id="sv_reading" style="display:none">
-        <p class="muted">Nice! We’ll put this in your <b>Reading</b> list. You’ll get bonus points when you mark it finished and share a reflection.</p>
-        <label class="check"><input type="checkbox" id="sv_chk_ping"/> Remind me to finish this</label>
-      </div>
-
-      <div id="sv_read" style="display:none">
-        <div class="row"><label class="lbl">Mood After</label><div id="sv_moodAfter" class="pills"></div></div>
-        <div class="row"><label class="lbl">Big takeaway</label><input id="sv_take" class="field" placeholder="e.g., One tiny habit changes everything"/></div>
-        <div class="row"><label class="lbl">Mood shift</label><input id="sv_shift" class="field" placeholder="e.g., from anxious → calm"/></div>
-        <div class="row"><label class="lbl">LOL/AHAs</label><input id="sv_lol" class="field" placeholder="e.g., chapter 3 made me laugh out loud"/></div>
-      </div>
-
-      <div class="row" style="justify-content:flex-end;gap:8px;margin-top:12px">
-        <button class="btn" onclick="svClose()">Cancel</button>
-        <button class="btn gold" onclick="svSave()">Save</button>
-      </div>
+<!-- Read Reflection Modal -->
+<div id="mask" class="mask" role="dialog" aria-modal="true">
+  <div class="modal">
+    <h3 id="modalTitle">Mark as read</h3>
+    <div class="small" id="modalSub" style="margin-bottom:8px"></div>
+    <div class="row" style="margin-top:6px">
+      <label class="lbl">Mood before</label>
+      <select id="moodBefore" class="field">
+        <option value="">Select…</option>
+        <option>Low</option><option>Medium</option><option>High</option>
+      </select>
+    </div>
+    <div class="row">
+      <label class="lbl">Mood after</label>
+      <select id="moodAfter" class="field">
+        <option value="">Select…</option>
+        <option>Low</option><option>Medium</option><option>High</option>
+      </select>
+    </div>
+    <div class="row">
+      <label class="lbl">Takeaway</label>
+      <textarea id="takeaway" class="field" rows="3" placeholder="What stuck with you?"></textarea>
+    </div>
+    <div class="row">
+      <label class="lbl">LOL / AHA</label>
+      <textarea id="aha" class="field" rows="2" placeholder="Funniest moment, biggest aha…"></textarea>
+    </div>
+    <div class="row" style="justify-content:flex-end;gap:8px">
+      <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn good" onclick="submitReflection()">Save (+25)</button>
     </div>
   </div>
+</div>
+
+<div id="toast" class="toast"></div>
 
 <script>
-/* ===================== Data & Config ===================== */
-const LEVELS = ["Low","Medium","High"];
-
-const DESIRED_GROUPS = {
-  calm:  ["Restful","Reflective"],
-  growth:["Insightful","Educational","Entrepreneurial"],
-  energy:["Empowering","Inspiring","Uplifting"],
-  fun:   ["Comedic","Silly"],
-  deep:  ["Intriguing","Arousing","Self-loving"]
-};
-
-const MOOD_MAP = {
-  low: ["sad","down","tired","drained","anxious","overwhelmed","lonely","stressed","meh"],
-  medium: ["ok","fine","neutral","calm","grounded","chill","steady"],
-  high: ["happy","joyful","excited","energized","pumped","hyped","curious","inspired","motivated"]
-};
-function mapFreeMood(text){
-  const t = (text||"").toLowerCase().trim();
-  if(!t){ setSingle("moodNowLevel",null); return; }
-  const hit = (arr)=>arr.some(w=>t.includes(w));
-  if(hit(MOOD_MAP.high)) setSingle("moodNowLevel","High");
-  else if(hit(MOOD_MAP.low)) setSingle("moodNowLevel","Low");
-  else setSingle("moodNowLevel","Medium");
-}
-
-// Seed books (you can add more later)
+/* ---------------- Catalog (add your books here) ---------------- */
 const BOOKS = [
-  { id:"rid", title:"The Ridiculous: Book 1", author:"Jef & Mindy",
+  {
+    id:"mabunny",
+    title:"Magical Adventures of Lori & Bonnie B. Bunny",
+    author:"Lori & Bonnie B. Bunny",
+    vibes:["Inspiring","Playful","Comedic","Uplifting"],
+    facts:{pace:"Fast", pages:248, year:2025},
+    gold:true,
+    image:"https://picsum.photos/400/600?random=101", // replace with real cover url when you have it
+    links:{buy:"#",site:"#"},
+    tags:["Family-friendly","Quest"]
+  },
+  {
+    id:"rid",
+    title:"The Ridiculous: Book 1",
+    author:"Jef & Mindy",
     vibes:["Funny","Satirical","Empowering","Chill","Mindset-shifting"],
-    facts:{pace:"Medium", pages:312, year:2024}, gold:true, links:{buy:"#",site:"#"}, tags:["Sci-Fi Comedy","Feel-good"] },
-  { id:"hab", title:"Atomic Habits of the Heart", author:"A. North",
+    facts:{pace:"Medium", pages:312, year:2024},
+    gold:true,
+    image:"https://picsum.photos/400/600?random=102",
+    links:{buy:"#", site:"#"},
+    tags:["Sci-Fi Comedy","Feel-good"]
+  },
+  {
+    id:"hab",
+    title:"Atomic Habits of the Heart",
+    author:"A. North",
     vibes:["Focused","Grounded","Practical","Motivated","Calm"],
-    facts:{pace:"Fast", pages:280, year:2019}, links:{buy:"#"}, tags:["Tiny steps","Habit loop"] },
-  { id:"coz", title:"Star Soup & Cozy Skies", author:"L. Nova",
+    facts:{pace:"Fast", pages:280, year:2019},
+    image:"https://picsum.photos/400/600?random=103",
+    links:{buy:"#"},
+    tags:["Tiny steps","Habit loop"]
+  },
+  {
+    id:"coz",
+    title:"Star Soup & Cozy Skies",
+    author:"L. Nova",
     vibes:["Calm","Cozy","Comforted","Reflective"],
-    facts:{pace:"Slow", pages:220, year:2021}, links:{buy:"#"}, tags:["Soothing","Night read"] }
+    facts:{pace:"Slow", pages:220, year:2021},
+    image:"https://picsum.photos/400/600?random=104",
+    links:{buy:"#"},
+    tags:["Soothing","Night read"]
+  }
 ];
 
-/* ===================== State ===================== */
+/* ---------------- State ---------------- */
 const state = {
-  profileTab: "reader",
-  searchMode: "read", // read / want
-  moodNowLevel: null,
-  desiredRead: new Set(),
-  moodAfterLevel: null,
   pts: Number(localStorage.getItem("bh_pts")||0),
-
+  deck: [],      // books with images only
+  idx: 0,        // current deck index
   shelf: JSON.parse(localStorage.getItem("bh_shelf")||"[]"),
-  // shelf entries: {id,title,author,image,status:'want'|'reading'|'read'}
-
-  order: [],
-  catalog: [],
-  reviewedCount: Number(localStorage.getItem("bh_reviewed")||0),
-
-  // author profile
-  isAuthor: localStorage.getItem("bh_isAuthor")==="1",
-  authorName: localStorage.getItem("bh_authorName")||"",
-
-  // save modal
-  sv: { open:false, book:null, mode:'want', mood:null }
+  // shelf entries: {id,title,author,image,status:'want'|'reading'|'read', reflection?:{before,after,takeaway,aha}}
+  pendingRead: null  // book object waiting for reflection
 };
 
-/* ===================== Init ===================== */
+function saveShelf(){ localStorage.setItem("bh_shelf", JSON.stringify(state.shelf)); }
+function addPts(n){ state.pts+=n; localStorage.setItem("bh_pts",state.pts); document.getElementById("pts").textContent=state.pts+" pts"; }
+function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1400); }
+
+/* ---------------- Init ---------------- */
 document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("pts").textContent = state.pts + " pts";
-
-  // profiles
-  document.getElementById("isAuthor").checked = state.isAuthor;
-  if(state.isAuthor){ document.getElementById("authorForm").style.display='block'; }
-  document.getElementById("authorName").value = state.authorName;
-
-  renderPillsSingle("moodNowLevel", LEVELS, v=>{ state.moodNowLevel=v; refreshMatches(); });
-  renderDesiredGroups();
-  renderPillsSingle("moodAfterLevel", LEVELS, v=>{ state.moodAfterLevel=v; });
+  state.deck = BOOKS.filter(b=>!!b.image); // require cover; swap to ensureCovers() if you want auto-fetch
+  if(!state.deck.length) document.getElementById("swipe").innerHTML='<div class="muted">No books available.</div>';
+  showCard();
   renderShelf();
-  renderReaderStats();
-
-  // preload covers & build catalog (skip imageless)
-  const withCovers = await ensureCovers(BOOKS);
-  state.catalog = withCovers;
-  refreshMatches();
 });
 
-/* ===================== Profiles ===================== */
-function setProfileTab(tab){
-  state.profileTab = tab;
-  document.getElementById("tabReader").classList.toggle("on", tab==='reader');
-  document.getElementById("tabAuthor").classList.toggle("on", tab==='author');
-  document.getElementById("readerProfile").style.display = tab==='reader'?'block':'none';
-  document.getElementById("authorProfile").style.display = tab==='author'?'block':'none';
-}
-function toggleAuthor(on){
-  state.isAuthor = !!on;
-  localStorage.setItem("bh_isAuthor", on?'1':'0');
-  document.getElementById("authorForm").style.display = on?'block':'none';
-}
-function saveAuthorName(v){
-  state.authorName = v;
-  localStorage.setItem("bh_authorName", v);
-}
-function renderReaderStats(){
-  const want = state.shelf.filter(x=>x.status==='want').length;
-  const reading = state.shelf.filter(x=>x.status==='reading').length;
-  const read = state.shelf.filter(x=>x.status==='read').length;
-  document.getElementById("stat_want").textContent = want;
-  document.getElementById("stat_reading").textContent = reading;
-  document.getElementById("stat_read").textContent = read;
-  document.getElementById("stat_reviewed").textContent = state.reviewedCount;
-  document.getElementById("stat_written").textContent = 0;
-}
+/* ---------------- Swipe Card ---------------- */
+function current(){ return state.deck[state.idx % state.deck.length]; }
 
-/* ===================== Search & Add ===================== */
-function setSearchMode(mode){
-  state.searchMode = mode;
-  document.getElementById("tabRead").classList.toggle("on", mode==="read");
-  document.getElementById("tabWant").classList.toggle("on", mode==="want");
-}
-async function doSearch(){
-  const q = document.getElementById("q").value.trim();
-  const box = document.getElementById("searchResults");
-  box.innerHTML = "<div class='muted'>Searching…</div>";
-  if(!q){ box.innerHTML = "<div class='muted'>Type a title or author.</div>"; return; }
+function showCard(){
+  const b = current();
+  if(!b){ document.getElementById("swipe").innerHTML='<div class="muted">No books available.</div>'; return; }
 
-  try{
-    const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=8`);
-    const data = await res.json();
-    const items = (data.items||[]).map(v=>{
-      const info = v.volumeInfo||{};
-      const img = info.imageLinks?.thumbnail || info.imageLinks?.smallThumbnail || null;
-      return {
-        id:v.id, title:info.title||"Untitled", author:(info.authors||["Unknown"]).join(", "),
-        image: img ? img.replace('http://','https://').replace('zoom=1','zoom=2') : null
-      };
-    });
+  // primary vibes + KPIs
+  const primary = (b.vibes||[]).slice(0,3);
+  const extra = Math.max(0, (b.vibes||[]).length - primary.length + (b.tags||[]).length);
+  const kpis = [b.facts?.pace, b.facts?.pages?`${b.facts.pages}p`:null, b.facts?.year?`Since ${b.facts.year}`:null].filter(Boolean);
 
-    if(!items.length){ box.innerHTML = "<div class='muted'>No results.</div>"; return; }
-
-    box.innerHTML = items.map(it=>`
-      <div class="tile">
-        <div class="cover">${it.image?`<img src="${it.image}">`:""}</div>
-        <h4>${escapeHtml(it.title)}</h4>
-        <div class="muted">${escapeHtml(it.author)}</div>
-        ${state.searchMode==='read'
-          ? `<div class="row" style="margin-top:8px"><select id="mood_${it.id}" class="field">
-                <option value="">Mood after reading…</option>
-                ${LEVELS.map(l=>`<option>${l}</option>`).join('')}
-             </select></div>
-             <button class="btn gold" onclick="addRead('${it.id}','${enc(it.title)}','${enc(it.author)}','${enc(it.image||"")}')">Add to Read</button>`
-          : `<button class="btn" onclick="addWish('${it.id}','${enc(it.title)}','${enc(it.author)}','${enc(it.image||"")}')">Add to Wishlist</button>`
-        }
-      </div>
-    `).join('');
-  }catch(e){
-    box.innerHTML = "<div class='muted'>Search failed. Try again.</div>";
-  }
-}
-function addRead(id, t, a, img){
-  const title = dec(t), author = dec(a), image = dec(img)||null;
-  const mood = document.getElementById(`mood_${id}`)?.value || null;
-  upsertShelf({id:`r_${id}`, title, author, image, status:'read'});
-  if(mood){ state.moodAfterLevel = mood; }
-  addPts(10); renderShelf(); renderReaderStats();
-}
-function addWish(id, t, a, img){
-  const title = dec(t), author = dec(a), image = dec(img)||null;
-  upsertShelf({id:`w_${id}`, title, author, image, status:'want'});
-  addPts(5); renderShelf(); renderReaderStats();
-}
-
-/* ===================== Desired Read & Mood ===================== */
-function renderDesiredGroups(){
-  const map = {dr_calm:DESIRED_GROUPS.calm, dr_growth:DESIRED_GROUPS.growth, dr_energy:DESIRED_GROUPS.energy, dr_fun:DESIRED_GROUPS.fun, dr_deep:DESIRED_GROUPS.deep};
-  for(const id in map){
-    const box = document.getElementById(id);
-    box.innerHTML = "";
-    map[id].forEach(name=>{
-      const b = document.createElement("button");
-      b.className = "pill";
-      b.textContent = name;
-      b.addEventListener("click", ()=>{
-        if(state.desiredRead.has(name)){ state.desiredRead.delete(name); b.classList.remove("on"); }
-        else { state.desiredRead.add(name); b.classList.add("on"); }
-        refreshMatches();
-      });
-      box.appendChild(b);
-    });
-  }
-}
-function renderPillsSingle(containerId, items, onPick){
-  const box = document.getElementById(containerId);
-  box.innerHTML = "";
-  let current = null;
-  items.forEach(name=>{
-    const b = document.createElement("button");
-    b.className = "pill";
-    b.textContent = name;
-    b.addEventListener("click", ()=>{
-      if(current===name){ current=null; b.classList.remove("on"); onPick(null); return; }
-      current = name;
-      [...box.children].forEach(ch=>ch.classList.remove("on"));
-      b.classList.add("on");
-      onPick(name);
-    });
-    box.appendChild(b);
-  });
-}
-function setSingle(containerId, value){
-  const box = document.getElementById(containerId);
-  [...box.children].forEach(ch=>ch.classList.toggle("on", ch.textContent===value));
-  if(containerId==="moodNowLevel") state.moodNowLevel = value;
-}
-
-/* ===================== Matching ===================== */
-function vibesFor(desired){
-  const d = (desired||"").toLowerCase();
-  if(d==="restful")      return ["Calm","Cozy","Chill","Comforted","Soothing","Gentle"];
-  if(d==="reflective")   return ["Reflective","Mindful","Thoughtful","Introspective"];
-  if(d==="insightful")   return ["Insightful","Wise","Practical","Aha","Mindset-shifting"];
-  if(d==="educational")  return ["Educational","Practical","How-to","Skill"];
-  if(d==="entrepreneurial") return ["Entrepreneurial","Startup","Business","Creator","Strategy"];
-  if(d==="empowering")   return ["Empowering","Confident","Motivated","Strong"];
-  if(d==="inspiring")    return ["Inspiring","Inspired","Hopeful","Uplifted"];
-  if(d==="uplifting")    return ["Uplifting","Joyful","Feel-good","Positive"];
-  if(d==="comedic")      return ["Funny","Witty","Humorous","Laugh-out-loud","Satirical"];
-  if(d==="silly")        return ["Silly","Absurd","Ridiculous","Playful"];
-  if(d==="intriguing")   return ["Intriguing","Mysterious","Curious","Page-turning"];
-  if(d==="arousing")     return ["Romantic","Sensual","Flirty"];
-  if(d==="self-loving")  return ["Self-loving","Healing","Compassionate","Acceptance"];
-  return [];
-}
-function score(b){
-  const want = [...state.desiredRead].flatMap(v=>vibesFor(v));
-  const inter = (arr, setOrArray) => {
-    const set = Array.isArray(setOrArray) ? new Set(setOrArray) : setOrArray;
-    return (arr||[]).filter(x=>set.has(x)).length;
-  };
-  let s = inter(b.vibes||[], new Set(want)) * 1.6;
-  if(state.moodNowLevel==="Low"){
-    const soothe = new Set(vibesFor("Restful"));
-    s += inter(b.vibes||[], soothe) * 0.4;
-  }
-  if(b.gold) s += 2.0;
-  return s;
-}
-function refreshMatches(){
-  state.order = [...state.catalog].sort((a,b)=>score(b)-score(a));
-  show(0);
-}
-
-/* ===================== Swipe Card ===================== */
-function show(idx){
   const el = document.getElementById("swipe");
-  if(state.order.length===0){
-    el.innerHTML = '<div class="muted">Loading covers or no matches yet… try adding desired reads above.</div>';
-    return;
-  }
-  const b = state.order[idx%state.order.length];
-
-  const allChips = [...(b.vibes||[]), ...(b.tags||[])].filter(Boolean);
-  const visibleChips = allChips.slice(0,6);
-  const more = allChips.length - visibleChips.length;
-
-  const kpis = [ b.facts?.pace, b.facts?.pages ? `${b.facts.pages}p` : null, b.facts?.year ? `Since ${b.facts.year}` : null ].filter(Boolean);
-  const coverHTML = `<div class="cover"><img src="${b.image}" alt="Cover of ${escapeHtml(b.title)}"></div>`;
-
   el.innerHTML = `
-    <div id="card" class="card-gesture swipe">
-      ${coverHTML}
+    <div id="card" class="card-gesture swipe" aria-live="polite">
+      <div class="cover">${b.image?`<img src="${b.image}" alt="Cover of ${escape(b.title)}">`:`<span style="font-size:48px;font-weight:800">${escape(b.title.slice(0,1))}</span>`}</div>
       <div>
-        <div class="row" style="justify-content:space-between;align-items:flex-start">
-          <div class="muted">Match score: <b>${Math.round(score(b)*10)/10}</b></div>
-          <div class="rightMeta">
-            ${b.gold?'<span class="chip" style="background:#fff7cc;border-color:#E7C200">⭐ Featured</span>':''}
-            <span class="badge gold" id="ptsTop">${state.pts} pts</span>
-          </div>
+        <div class="rightMeta">
+          ${b.gold?'<span class="badge gold">Featured</span>':''}
+          <span class="badge gold" id="ptsTop">${state.pts} pts</span>
         </div>
-
-        <h2 class="title">${escapeHtml(b.title)}</h2>
-        <p class="authorline">by ${escapeHtml(b.author)}</p>
+        <div class="title">${escape(b.title)}</div>
+        <div class="authorline">by ${escape(b.author)}</div>
 
         <div class="chips">
-          ${visibleChips.map(c=>`<span class="chip">${escapeHtml(c)}</span>`).join('')}
-          ${more>0?`<span class="chip">+${more} more</span>`:''}
+          ${primary.map(c=>`<span class="chip">${escape(c)}</span>`).join('')}
+          ${extra>0?`<span class="chip">+${extra} more</span>`:''}
         </div>
+        <div class="kpis">${kpis.map(x=>`<span class="kpi">${escape(x)}</span>`).join('')}</div>
 
-        <div class="kpis">
-          ${kpis.map(x=>`<span class="kpi">${escapeHtml(x)}</span>`).join('')}
-        </div>
+        <div class="divider"></div>
 
-        <div class="actions">
-          <button class="btn" onclick="pass()">Not for me</button>
-          <button class="btn gold" onclick="openSaveModal('${b.id}')">Save (+5)</button>
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          <button class="btn info"  onclick="fileWant()">Want (+5)</button>
+          <button class="btn good"  onclick="fileReading()">Reading (+7)</button>
+          <button class="btn warn"  onclick="openReadModal()">Already read</button>
         </div>
 
         <div class="divider"></div>
         <div class="author">
-          <b>Author</b> · <span class="muted">${escapeHtml(b.author)}</span>
+          <b>Author</b> · <span class="muted">${escape(b.author)}</span>
           ${b.links?.site?`· <a class="link" href="${b.links.site}">Website</a>`:''}
           ${b.links?.buy?`· <a class="link" href="${b.links.buy}">Buy</a>`:''}
         </div>
       </div>
 
-      <span class="badge-swipe like">SAVE</span>
-      <span class="badge-swipe nope">NOPE</span>
-      <div class="hint">Swipe me → <span class="arrow">➡️</span></div>
+      <span class="badge-swipe want">WANT</span>
+      <span class="badge-swipe like">READING</span>
+      <span class="badge-swipe read">READ</span>
     </div>
   `;
-  addSwipe(document.getElementById('card'),
-           ()=>pass(),
-           ()=>openSaveModal(b.id));
+
+  // enable swipe gestures
+  const card = document.getElementById("card");
+  addSwipe(card, fileWant, fileReading, openReadModal);
 }
 
-function addSwipe(el, onLeft, onRight){
-  let startX = 0, dx = 0, dragging = false;
-  const threshold = 80;
+/* drag logic: left=want, right=reading, up=read */
+function addSwipe(el, onLeft, onRight, onUp){
+  let startX=0,startY=0,dx=0,dy=0,drag=false;
+  const want = el.querySelector('.badge-swipe.want');
   const like = el.querySelector('.badge-swipe.like');
-  const nope = el.querySelector('.badge-swipe.nope');
+  const read = el.querySelector('.badge-swipe.read');
 
-  const onDown = (e)=>{ dragging = true; startX = e.clientX ?? e.touches?.[0]?.clientX; el.style.transition=''; };
-  const onMove = (e)=>{
-    if(!dragging) return;
-    const x = e.clientX ?? e.touches?.[0]?.clientX;
-    dx = x - startX;
-    const rot = dx/12;
-    el.style.transform = `translateX(${dx}px) rotate(${rot}deg)`;
-    const a = Math.min(1, Math.abs(dx)/120);
-    if(dx>0){ if(like){ like.style.opacity = a; } if(nope){ nope.style.opacity = 0; } }
-    else    { if(nope){ nope.style.opacity = a; } if(like){ like.style.opacity = 0; } }
+  const down = e=>{ drag=true; startX=e.clientX ?? e.touches?.[0]?.clientX; startY=e.clientY ?? e.touches?.[0]?.clientY; el.style.transition=''; };
+  const move = e=>{
+    if(!drag) return;
+    const x = e.clientX ?? e.touches?.[0]?.clientX; const y = e.clientY ?? e.touches?.[0]?.clientY;
+    dx = x - startX; dy = y - startY;
+    const rot = dx/14;
+    el.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg)`;
+    const ax = Math.min(1, Math.abs(dx)/120);
+    const ay = Math.min(1, Math.max(0, -dy)/120); // up only
+    if(dx<0){ want.style.opacity=ax; like.style.opacity=0; }
+    else if(dx>0){ like.style.opacity=ax; want.style.opacity=0; }
+    else { want.style.opacity=0; like.style.opacity=0; }
+    read.style.opacity = ay;
   };
-  const snap = ()=>{
-    el.style.transition = 'transform .2s ease';
-    el.style.transform = 'translateX(0) rotate(0)';
-    if(like) like.style.opacity = 0;
-    if(nope) nope.style.opacity = 0;
+  const end = ()=>{
+    if(!drag) return; drag=false;
+    const TH=80, TH_UP=80;
+    if(dx < -TH){ fling(-520, 0, -15, onLeft); }
+    else if(dx > TH){ fling(520, 0, 15, onRight); }
+    else if(-dy > TH_UP){ fling(0, -520, 0, onUp); }
+    else { snap(); }
   };
-  const onUp = ()=>{
-    if(!dragging) return;
-    dragging = false;
-    if(dx >  threshold){ el.style.transition='transform .2s ease'; el.style.transform='translateX(500px) rotate(15deg)'; setTimeout(onRight, 160); }
-    else if(dx < -threshold){ el.style.transition='transform .2s ease'; el.style.transform='translateX(-500px) rotate(-15deg)'; setTimeout(onLeft, 160); }
-    else snap();
-  };
+  const snap = ()=>{ el.style.transition='transform .2s'; el.style.transform='translate(0,0) rotate(0)'; want.style.opacity=0; like.style.opacity=0; read.style.opacity=0; };
+  const fling=(tx,ty,rot,cb)=>{ el.style.transition='transform .2s'; el.style.transform=`translate(${tx}px,${ty}px) rotate(${rot}deg)`; setTimeout(cb,160); };
 
-  el.addEventListener('pointerdown', onDown);
-  el.addEventListener('pointermove', onMove);
-  el.addEventListener('pointerup', onUp);
-  el.addEventListener('pointercancel', onUp);
+  el.addEventListener('pointerdown',down);
+  el.addEventListener('pointermove',move);
+  el.addEventListener('pointerup',end);
+  el.addEventListener('pointercancel',end);
 }
 
-/* ===================== Save Modal ===================== */
-function openSaveModal(bookId){
-  const b = state.catalog.find(x=>x.id===bookId);
-  if(!b) return;
-  state.sv = { open:true, book:b, mode:'want', mood:null };
-  document.getElementById("sv_title").textContent = b.title;
-  document.getElementById("sv_author").textContent = `by ${b.author}`;
-  svSetMode('want');
-  renderPillsSingle("sv_moodAfter", LEVELS, v=>{ state.sv.mood = v; });
-  document.getElementById("saveMask").style.display='flex';
-}
-function svSetMode(mode){
-  state.sv.mode = mode;
-  document.getElementById("sv_tab_want").classList.toggle("on", mode==='want');
-  document.getElementById("sv_tab_reading").classList.toggle("on", mode==='reading');
-  document.getElementById("sv_tab_read").classList.toggle("on", mode==='read');
-  document.getElementById("sv_want").style.display = mode==='want'?'block':'none';
-  document.getElementById("sv_reading").style.display = mode==='reading'?'block':'none';
-  document.getElementById("sv_read").style.display = mode==='read'?'block':'none';
-}
-function svClose(){ document.getElementById("saveMask").style.display='none'; state.sv.open=false; }
-function svSave(){
-  const b = state.sv.book; if(!b) return;
-  if(state.sv.mode==='want'){
-    upsertShelf({id:b.id,title:b.title,author:b.author,image:b.image,status:'want'});
-    addPts(5);
-  }else if(state.sv.mode==='reading'){
-    upsertShelf({id:b.id,title:b.title,author:b.author,image:b.image,status:'reading'});
-    addPts(7);
-  }else{ // read
-    upsertShelf({id:b.id,title:b.title,author:b.author,image:b.image,status:'read'});
-    const review = {
-      take: document.getElementById("sv_take").value.trim(),
-      shift: document.getElementById("sv_shift").value.trim(),
-      lol: document.getElementById("sv_lol").value.trim(),
-      mood: state.sv.mood||null
-    };
-    let pts = 10;
-    if(review.mood) pts+=5;
-    if(review.take) pts+=5;
-    if(review.shift) pts+=5;
-    if(review.lol) pts+=5;
-    addPts(pts);
-    state.reviewedCount += 1;
-    localStorage.setItem("bh_reviewed", state.reviewedCount);
-  }
-  svClose(); renderShelf(); renderReaderStats(); pass();
-}
+/* filing actions */
+function nextCard(){ state.idx=(state.idx+1)%state.deck.length; showCard(); }
+function ensureOnShelf(book){ if(!state.shelf.find(x=>x.id===book.id)){ state.shelf.unshift({id:book.id,title:book.title,author:book.author,image:book.image,status:'want'}); saveShelf(); } return state.shelf.find(x=>x.id===book.id); }
 
-/* ===================== Shelf & Points ===================== */
-function upsertShelf(entry){
-  const i = state.shelf.findIndex(x=>x.id===entry.id);
-  if(i>=0) state.shelf[i] = {...state.shelf[i], ...entry};
-  else state.shelf.unshift(entry);
-  localStorage.setItem("bh_shelf", JSON.stringify(state.shelf));
+function fileWant(){
+  const b=current(); const it=ensureOnShelf(b); it.status='want'; saveShelf(); addPts(5); toast('Saved to Want. Come back to reflect when you finish!'); nextCard(); renderShelf();
 }
-function renderShelf(){
-  const want = state.shelf.filter(x=>x.status==='want');
-  const reading = state.shelf.filter(x=>x.status==='reading');
-  const read = state.shelf.filter(x=>x.status==='read');
-  const fill = (el, list)=>{
-    const box = document.getElementById(el);
-    if(!list.length){ box.textContent = "Empty"; box.classList.add("muted"); return; }
-    box.classList.remove("muted");
-    box.innerHTML = list.map(b=>`• <b>${escapeHtml(b.title)}</b> — ${escapeHtml(b.author)}`).join("<br>");
-  };
-  fill("list_want", want);
-  fill("list_reading", reading);
-  fill("list_read", read);
+function fileReading(){
+  const b=current(); const it=ensureOnShelf(b); it.status='reading'; saveShelf(); addPts(7); toast('Marked as Reading. Come back to reflect when you finish!'); nextCard(); renderShelf();
 }
-function addPts(n){
-  state.pts += n;
-  localStorage.setItem("bh_pts", state.pts);
-  document.getElementById("pts").textContent = state.pts + " pts";
-  const top = document.getElementById("ptsTop"); if(top) top.textContent = state.pts + " pts";
+function openReadModal(fromShelfId=null){
+  const b = fromShelfId ? state.shelf.find(x=>x.id===fromShelfId) : current();
+  state.pendingRead = b;
+  document.getElementById('modalTitle').textContent = `Mark as read: ${b.title}`;
+  document.getElementById('modalSub').textContent = 'Share how it changed you — this helps future matches.';
+  document.getElementById('moodBefore').value='';
+  document.getElementById('moodAfter').value='';
+  document.getElementById('takeaway').value='';
+  document.getElementById('aha').value='';
+  document.getElementById('mask').style.display='flex';
 }
-
-/* ===================== Reflection (for read books) ===================== */
-function resetReflection(){
-  document.getElementById("reflectionText").value = "";
-  document.getElementById("reflectionNote").textContent = "";
-  setSingle("moodAfterLevel", null);
-}
+function closeModal(){ document.getElementById('mask').style.display='none'; state.pendingRead=null; }
 function submitReflection(){
-  const note = document.getElementById("reflectionNote");
-  const txt = (document.getElementById("reflectionText").value || "").trim();
+  const before = document.getElementById('moodBefore').value;
+  const after  = document.getElementById('moodAfter').value;
+  const takeaway = document.getElementById('takeaway').value.trim();
+  const aha = document.getElementById('aha').value.trim();
+  if(!before || !after){ toast('Please select mood before & after.'); return; }
 
-  let points = 0;
-  if(txt.length >= 1) points += 5;
-  if(txt.length >= 40) points += 5;
-
-  const idx = v => v ? ["Low","Medium","High"].indexOf(v) : -1;
-  const before = idx(state.moodNowLevel);
-  const after  = idx(state.moodAfterLevel);
-  if(after > before && before >= 0) points += 10;
-
-  if(points>0){
-    addPts(points);
-    state.reviewedCount += 1;
-    localStorage.setItem("bh_reviewed", state.reviewedCount);
-    renderReaderStats();
-    note.textContent = `Nice! You earned +${points} pts for your reflection.`;
-  }else{
-    note.textContent = "Add a few words and set Mood After to earn points.";
-  }
+  const b = state.pendingRead;
+  const shelfItem = state.shelf.find(x=>x.id===b.id) || ensureOnShelf(b);
+  shelfItem.status='read';
+  shelfItem.reflection = {before,after,takeaway,aha,ts:Date.now()};
+  saveShelf();
+  addPts(25);
+  toast('Saved! Thanks for reflecting 🙌');
+  closeModal();
+  nextCard();
+  renderShelf();
 }
 
-/* ===================== Covers ===================== */
-async function ensureCovers(list){
-  const out = [];
-  for(const b of list){
-    let img = b.image || null;
-    if(!img) img = await resolveCover(b);
-    if(img){ out.push({...b, image: img}); } // skip imageless
-  }
-  return out;
+/* ---------------- Shelf render ---------------- */
+function renderShelf(){
+  const shelf = document.getElementById('shelf');
+  if(!state.shelf.length){ shelf.innerHTML='<div class="muted">Your shelf is empty. Swipe some books!</div>'; return; }
+  shelf.innerHTML = state.shelf.map(it=>`
+    <div class="item">
+      <div class="thumb">${it.image?`<img src="${it.image}" alt="">`:''}</div>
+      <div>
+        <h4>${escape(it.title)}</h4>
+        <div class="small">by ${escape(it.author)} · <b>${it.status}</b></div>
+        <div class="tile-actions" style="margin-top:6px">
+          ${it.status!=='read'?`<button class="btn good" onclick="openReadModal('${it.id}')">Mark read</button>`:''}
+          ${it.status==='read'?`<button class="btn ghost" onclick="openReadModal('${it.id}')">Reflect</button>`:''}
+          <button class="btn ghost" onclick="removeFromShelf('${it.id}')">Remove</button>
+        </div>
+        ${it.reflection? renderReflection(it.reflection) : ''}
+      </div>
+    </div>
+  `).join('');
 }
-async function resolveCover(book){
-  try {
-    const q = encodeURIComponent(`intitle:${book.title} inauthor:${book.author}`);
-    const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1`);
-    if(res.ok){
-      const data = await res.json();
-      const img = data?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail
-               || data?.items?.[0]?.volumeInfo?.imageLinks?.smallThumbnail;
-      if(img) return img.replace('http://','https://').replace('zoom=1','zoom=2');
-    }
-  } catch(e) { /* ignore */ }
-  if(book.isbn){
-    const url = `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg`;
-    try { const head = await fetch(url,{method:'HEAD'}); if(head.ok) return url; } catch(e){}
-  }
-  return null;
+function renderReflection(r){
+  return `<div class="small" style="margin-top:8px">
+    <div><b>Mood</b> before → after: ${escape(r.before)} → ${escape(r.after)}</div>
+    ${r.takeaway?`<div><b>Takeaway:</b> ${escape(r.takeaway)}</div>`:''}
+    ${r.aha?`<div><b>LOL/AHA:</b> ${escape(r.aha)}</div>`:''}
+  </div>`;
+}
+function removeFromShelf(id){
+  state.shelf = state.shelf.filter(x=>x.id!==id);
+  saveShelf();
+  renderShelf();
 }
 
-/* ===================== Utils ===================== */
-function pass(){ state.order.push(state.order.shift()); show(0); }
-const enc = encodeURIComponent, dec = decodeURIComponent;
-function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
+/* ---------------- Utils ---------------- */
+function escape(s){return String(s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
 </script>
 </body>
 </html>
