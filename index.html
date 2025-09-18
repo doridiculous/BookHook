@@ -16,14 +16,23 @@
        font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
   .wrap{max-width:980px;margin:0 auto;padding:18px 14px}
 
-  /* Top status bar */
-  .bar{display:flex;justify-content:flex-end;align-items:center;
+  /* Top status bar + mini nav */
+  .bar{display:flex;justify-content:space-between;align-items:center;
        padding:8px 14px;border-bottom:1px solid var(--line);background:#fff;position:sticky;top:0;z-index:3}
   .badge{padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:600;font-size:12px}
   .badge.gold{background:#fff7cc;border-color:#E7C200}
+  .nav{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .nav .btn{font-size:12px;padding:8px 10px}
+
+  /* Buttons */
+  .btn{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:600}
+  .btn.gold{background:var(--gold);border-color:#caa900;color:#000}
+  .btn.ok{background:#eaf8ed;border-color:#b8e4c3;color:#0f6c25}
+  .btn.nope{background:#fde9ea;border-color:#f5c4c8;color:#a01515}
+  .link{color:#0a66c2;text-decoration:none}
 
   /* Hero */
-  .hero{display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 12px}
+  .hero{display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 12px}
   .hero .logo{height:64px;display:block}
   .hero .brand{font-weight:800;font-size:22px}
   .rot{min-height:22px;font-weight:600;color:#222;text-align:center}
@@ -40,12 +49,6 @@
   .pill{padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:var(--pill);cursor:pointer;display:inline-flex;align-items:center}
   .pill.on{background:#000;color:#fff;border-color:#000}
   .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
-
-  /* Buttons */
-  .btn{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:600}
-  .btn.gold{background:var(--gold);border-color:#caa900;color:#000}
-  .btn.ok{background:#eaf8ed;border-color:#b8e4c3;color:#0f6c25}
-  .btn.nope{background:#fde9ea;border-color:#f5c4c8;color:#a01515}
 
   /* Discover swipe card */
   .swipe{display:grid;grid-template-columns:210px 1fr;gap:16px}
@@ -78,22 +81,39 @@
   .stat.reading{background:#eaf8ed;border-color:#b8e4c3}
   .stat.read{background:#fff0d2;border-color:#f7dc8a}
 
-  /* Category tabs for Desired Mood */
+  /* Tabs for Desired Mood */
   .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
   .tabbtn{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;cursor:pointer;font-weight:600;font-size:12px}
   .tabbtn.on{background:#000;color:#fff;border-color:#000}
 
-  /* Footer banner */
+  /* HookMarks list */
+  .noteItem{border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff}
+  .tagmini{padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:#f9f9fb;font-size:12px;margin-right:6px}
+
+  /* Community (profiles) */
+  .cardUser{display:grid;grid-template-columns:48px 1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff}
+  .avatar{width:48px;height:48px;border-radius:50%;background:#eee;display:flex;align-items:center;justify-content:center;font-weight:800}
+
+  /* Footer mantra */
   .foot{padding:18px 14px;text-align:center;color:#222}
   .foot .tag{display:inline-block;background:#fff7cc;border:1px solid #E7C200;color:#2b2100;padding:8px 12px;border-radius:999px;font-weight:700}
 </style>
 </head>
 <body>
 
-  <!-- Status bar -->
+  <!-- Status bar + mini nav -->
   <div class="bar">
-    <span id="tier" class="badge">Bronze</span>
-    <span id="pts" class="badge gold" style="margin-left:8px">0 pts</span>
+    <div class="nav">
+      <button class="btn" onclick="scrollToId('discover')">Discover</button>
+      <button class="btn" onclick="scrollToId('hookHub')">HookMarks</button>
+      <button class="btn" onclick="scrollToId('myProfile')">My Profile</button>
+      <button class="btn" onclick="scrollToId('community')">Community</button>
+      <button class="btn" onclick="scrollToId('boards')">Leaderboards</button>
+    </div>
+    <div>
+      <span id="tier" class="badge">Bronze</span>
+      <span id="pts" class="badge gold" style="margin-left:8px">0 pts</span>
+    </div>
   </div>
 
   <!-- Centered logo + rotating tagline -->
@@ -105,8 +125,8 @@
 
   <main class="wrap">
 
-    <!-- How I'm feeling (free text + quick set) -->
-    <section class="card">
+    <!-- How I'm feeling -->
+    <section class="card" id="feel">
       <h2>How I’m feeling</h2>
       <div class="row">
         <input id="feelText" class="field" placeholder="I am feeling … (tired, anxious, pumped…)" style="max-width:420px">
@@ -116,11 +136,11 @@
         <b>Level:</b>
         <div id="moodLevel" class="pills" aria-label="Low / Medium / High"></div>
       </div>
-      <div class="muted">Tip: type anything (“overwhelmed”, “hyped”) or tap a level. This influences your matches.</div>
+      <div class="muted">Type anything (“overwhelmed”, “hyped”) or tap a level. This influences your matches.</div>
     </section>
 
     <!-- Desired Mood (categorized) -->
-    <section class="card">
+    <section class="card" id="desired">
       <h2>Desired Mood</h2>
       <div class="tabs" id="catTabs"></div>
       <div id="desiredPills" class="pills" aria-label="desired mood pills"></div>
@@ -128,53 +148,105 @@
     </section>
 
     <!-- Discover -->
-    <section class="card" id="swipeCard">
+    <section class="card" id="discover">
+      <h2>Discover</h2>
       <div class="bar-mini">
         <span class="tab">Swipe left: Want</span>
         <span class="tab">Swipe right: Reading</span>
-        <span class="tab">Tap “Already read” to reflect</span>
+        <span class="tab hint">Tap “Already read” to add HookMarks</span>
+        <a class="link" href="#hookHub">See HookMarks →</a>
       </div>
       <div id="swipe" class="swipe"></div>
     </section>
 
-    <!-- Reflection -->
+    <!-- HookMarks creation -->
     <section class="card" id="reflectCard" style="display:none">
-      <h2>Share your takeaway</h2>
+      <h2>Add HookMarks</h2>
       <div class="muted" id="reflectTitle"></div>
       <div class="row"><b>Mood after:</b>
         <div id="moodAfter" class="pills" aria-label="mood after"></div>
       </div>
+      <div class="row">
+        <span class="tagmini"><label><input type="checkbox" id="tagLOL"> LOL</label></span>
+        <span class="tagmini"><label><input type="checkbox" id="tagAha"> AHA</label></span>
+        <span class="tagmini"><label><input type="checkbox" id="tagBreak"> Breakthrough</label></span>
+      </div>
       <textarea id="reflectText" class="field" rows="4"
-        placeholder="Any laughs, AHAs, mindset shifts, or feelings you want to remember?"></textarea>
+        placeholder="What shifted? Favorite line, aha, laugh, or real-life change…"></textarea>
       <div class="row">
         <button class="btn" onclick="cancelReflect()">Cancel</button>
-        <button class="btn gold" onclick="submitReflect()">Save reflection (+10)</button>
+        <button class="btn gold" onclick="submitReflect()">Save HookMarks (+10)</button>
       </div>
       <div class="muted" id="reflectNote"></div>
     </section>
 
     <!-- Shelf -->
-    <section class="card">
+    <section class="card" id="shelfCard">
       <h2>Your Shelf</h2>
       <div id="shelf" class="list"></div>
       <div class="muted" id="shelfEmpty">Save or swipe to add books here.</div>
     </section>
 
-    <!-- Profiles -->
-    <section class="card">
-      <h2>Profiles</h2>
+    <!-- HookMarks Hub -->
+    <section class="card" id="hookHub">
+      <h2>HookMarks</h2>
+      <div class="row">
+        <select id="filterBook" class="field" style="max-width:260px"></select>
+        <select id="filterReader" class="field" style="max-width:260px"></select>
+        <button class="btn" onclick="renderHookMarks()">Filter</button>
+        <button class="btn" onclick="clearHookFilters()">Clear</button>
+      </div>
+      <div id="notesList" class="list"></div>
+      <div class="muted" id="notesEmpty">No HookMarks yet. Mark a book “Already read” and add one!</div>
+    </section>
+
+    <!-- My Profile -->
+    <section class="card" id="myProfile">
+      <h2>My Profile</h2>
+      <div class="row">
+        <b>You</b>
+        <span class="stat" id="badgeReader">READER</span>
+        <span class="stat" id="badgeAuthor">AUTHOR</span>
+      </div>
       <div class="row">
         <label><input type="checkbox" id="isReader"> Reader</label>
         <label><input type="checkbox" id="isAuthor"> Author</label>
         <button class="btn" onclick="saveProfile()">Save</button>
+        <a class="link" href="#hookHub" onclick="setHookMarksFilterMine()">See my HookMarks →</a>
       </div>
       <div class="row">
         <span class="stat want">Want: <b id="statWant">0</b></span>
         <span class="stat reading">Reading: <b id="statReading">0</b></span>
         <span class="stat read">Read: <b id="statRead">0</b></span>
-        <span class="stat">Rated: <b id="statRated">0</b></span>
+        <span class="stat">HookMarks: <b id="statRated">0</b></span>
       </div>
-      <div class="muted">Profiles show if you’re a Reader and/or Author, and your activity stats (auto-calculated).</div>
+
+      <h3 style="margin:12px 0 6px">Favorites (⭐ Authors)</h3>
+      <div id="favAuthors" class="list"></div>
+      <div class="muted" id="favEmpty">Star an author from Community to add them here.</div>
+    </section>
+
+    <!-- Community directory -->
+    <section class="card" id="community">
+      <h2>Community</h2>
+      <div class="row">
+        <button class="btn gold" onclick="showCommunity('authors')">Authors</button>
+        <button class="btn" onclick="showCommunity('readers')">Readers</button>
+      </div>
+      <div id="communityList" class="list"></div>
+    </section>
+
+    <!-- Leaderboards -->
+    <section class="card" id="boards">
+      <h2>Leaderboards</h2>
+      <div class="row">
+        <div class="stat">Top Authors (impact)</div>
+        <div class="stat">Top Readers (HookMarks)</div>
+      </div>
+      <div class="row" style="align-items:flex-start;gap:16px;flex-wrap:wrap">
+        <div class="list" id="lbAuthors" style="flex:1 1 420px"></div>
+        <div class="list" id="lbReaders" style="flex:1 1 420px"></div>
+      </div>
     </section>
 
   </main>
@@ -185,7 +257,7 @@
   </footer>
 
 <script>
-/* ───────────────── Brand taglines ───────────────── */
+/* ───────── Brand taglines ───────── */
 const taglines = [
   "Hook the right book for your mood.",
   "Swipe · Match · Read · Transform.",
@@ -197,10 +269,8 @@ function rotateTag(){ const el = document.getElementById('rotTag'); if(!el) retu
   el.innerHTML = `<small>${taglines[t]}</small>`; t=(t+1)%taglines.length; }
 rotateTag(); setInterval(rotateTag, 3000);
 
-/* ───────────────── Data ───────────────── */
+/* ───────── Data ───────── */
 const MOOD_LEVELS = ["Low","Medium","High"];
-
-/* Categorized desired moods */
 const DESIRED_GROUPS = {
   Calm: ["Restful","Peaceful","Comforted","Grounded","Chill","Cozy"],
   Clarity: ["Reflective","Insightful","Mindful","Focused","Self-loving"],
@@ -208,15 +278,13 @@ const DESIRED_GROUPS = {
   Energy: ["Curious","Playful","Comedic","Silly","Adventurous"],
   Deep: ["Intriguing","Arousing","Transformational"]
 };
-
-/* Free-text mood keyword map → Low/Med/High */
 const MOOD_MAP = {
   low:["sad","down","tired","drained","anxious","overwhelmed","lonely","stressed","meh","lost","empty"],
   medium:["ok","fine","neutral","calm","grounded","chill","steady","bored"],
   high:["happy","joyful","excited","energized","pumped","hyped","curious","inspired","motivated","confident"]
 };
 
-/* Book catalog (add image: 'https://...' to lock a cover) */
+/* Books (add image: 'https://...' to lock a cover) */
 const BOOKS = [
   {
     id:"rid",
@@ -227,7 +295,7 @@ const BOOKS = [
     gold:true,
     links:{buy:"#", site:"#"},
     tags:["Sci-Fi Comedy","Feel-good"]
-    // image: "https://m.media-amazon.com/images/I/xxxx.jpg"
+    // image:"https://m.media-amazon.com/images/I/xxxx.jpg"
   },
   {
     id:"mag",
@@ -259,18 +327,33 @@ const BOOKS = [
   }
 ];
 
-/* ───────────────── State ───────────────── */
+/* Seed community authors (directory cards) */
+const AUTHORS = [
+  { name:"Jef & Mindy", bio:"Feel-good sci-fi comedy", impact:{lol:0, aha:0, brk:0} },
+  { name:"Elaine Blackstien", bio:"Adventure & heart for all ages", impact:{lol:0, aha:0, brk:0} },
+  { name:"L. Nova", bio:"Cozy, soothing night reads", impact:{lol:0, aha:0, brk:0} },
+  { name:"A. North", bio:"Habits, growth & practical change", impact:{lol:0, aha:0, brk:0} }
+];
+
+/* Seed readers (for Community > Readers tab) */
+const READERS = [
+  { name:"You", hooks:0 },
+  { name:"Ava", hooks:3 },
+  { name:"Noah", hooks:5 }
+];
+
+/* ───────── State ───────── */
 const state = {
   moodLevel: new Set(), desired: new Set(), moodAfter: new Set(),
   pts: Number(localStorage.getItem("bh_pts")||0),
   shelf: JSON.parse(localStorage.getItem("bh_shelf")||"[]"), // {id,title,author,image,status}
-  reviews: JSON.parse(localStorage.getItem("bh_reviews")||"[]"), // {id, moodAfter, note, ts}
+  hookmarks: JSON.parse(localStorage.getItem("bh_hooks")||"[]"), // {id, bookId, bookTitle, author, moodAfter, note, tags, reader, ts}
   order: [], reflectingId: null,
   desiredTab: "Calm",
-  profile: JSON.parse(localStorage.getItem("bh_profile")||'{"isReader":true,"isAuthor":false}')
+  profile: JSON.parse(localStorage.getItem("bh_profile")||'{"isReader":true,"isAuthor":false,"favorites":[]}'),
 };
 
-/* ───────────────── Init ───────────────── */
+/* ───────── Init ───────── */
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("pts").textContent = state.pts + " pts";
   // Feeling controls
@@ -278,36 +361,25 @@ document.addEventListener("DOMContentLoaded", () => {
   renderPills("moodAfter", MOOD_LEVELS, state.moodAfter);
   // Desired tabs + pills
   renderDesiredTabs();
-  // Profile toggles
+  // Profile toggles & badges
   document.getElementById("isReader").checked = !!state.profile.isReader;
   document.getElementById("isAuthor").checked = !!state.profile.isAuthor;
+  renderBadges();
+  renderFavorites();
   // Covers, then show
   prefetchCovers().then(()=>{ refreshMatches(); show(0); });
   renderShelf(); updateStats();
+  // HookMarks hub filters (books/readers)
+  initHookFilters();
+  renderHookMarks();
+  // Community default: authors
+  showCommunity('authors');
+  // Leaderboards
+  rebuildLeaderboards();
 });
 
-/* ───────────────── Feeling mapping ───────────────── */
-function mapFreeMood(){
-  const txt = (document.getElementById('feelText').value||"").toLowerCase().trim();
-  if(!txt) return;
-  const hit = (arr)=>arr.some(w=>txt.includes(w));
-  let level = "Medium";
-  if(hit(MOOD_MAP.high)) level="High";
-  else if(hit(MOOD_MAP.low)) level="Low";
-  setSingle("moodLevel", level);
-}
-function setSingle(containerId, value){
-  const box = document.getElementById(containerId);
-  const pills = [...box.querySelectorAll('.pill')];
-  pills.forEach(p=>p.classList.remove('on'));
-  const match = pills.find(p=>p.textContent===value);
-  if(match) match.classList.add('on');
-  const set = containerId==="moodLevel"?state.moodLevel:state.moodAfter;
-  set.clear(); set.add(value);
-  refreshMatches();
-}
-
-/* ───────────────── Rendering helpers ───────────────── */
+/* ───────── Helpers UI ───────── */
+function scrollToId(id){ document.getElementById(id)?.scrollIntoView({behavior:'smooth'}); }
 function renderPills(containerId, items, set, onChange){
   const box = document.getElementById(containerId); box.innerHTML = "";
   items.forEach(name => {
@@ -348,9 +420,29 @@ function renderDesiredPills(){
   });
 }
 
-/* ───────────────── Matching ───────────────── */
+/* Feeling free-text → Low/Med/High */
+function mapFreeMood(){
+  const txt = (document.getElementById('feelText').value||"").toLowerCase().trim();
+  if(!txt) return;
+  const hit = (arr)=>arr.some(w=>txt.includes(w));
+  let level = "Medium";
+  if(hit(MOOD_MAP.high)) level="High";
+  else if(hit(MOOD_MAP.low)) level="Low";
+  setSingle("moodLevel", level);
+}
+function setSingle(containerId, value){
+  const box = document.getElementById(containerId);
+  const pills = [...box.querySelectorAll('.pill')];
+  pills.forEach(p=>p.classList.remove('on'));
+  const match = pills.find(p=>p.textContent===value);
+  if(match) match.classList.add('on');
+  const set = containerId==="moodLevel"?state.moodLevel:state.moodAfter;
+  set.clear(); set.add(value);
+  refreshMatches();
+}
+
+/* ───────── Matching ───────── */
 function score(b){
-  // Desired vs vibes (1.4x), mood level influence (High prefers “energizing” vibes loosely via count)
   const inter = (arr,set)=>arr.filter(x=>set.has(x)).length;
   let s = inter(b.vibes||[], state.desired)*1.4;
   if(state.moodLevel.has("Low"))  s += (b.vibes||[]).includes("Comforted")?0.5:0;
@@ -364,7 +456,7 @@ function refreshMatches(){
   show(0);
 }
 
-/* ───────────────── Swipe card ───────────────── */
+/* ───────── Swipe card ───────── */
 function show(idx){
   if(state.order.length===0){ document.getElementById("swipe").innerHTML='<div class="muted">No books yet.</div>'; return; }
   const b = state.order[idx%state.order.length];
@@ -393,14 +485,16 @@ function show(idx){
         <div class="badge gold" id="ptsTop">${state.pts} pts</div>
       </div>
       <h2 style="margin:6px 0 2px">${escapeHtml(b.title)}</h2>
-      <div class="muted" style="margin-bottom:6px">by ${escapeHtml(b.author)}</div>
+      <div class="muted" style="margin-bottom:6px">
+        by <a class="link" href="#community" onclick="openAuthor('${b.author}')">${escapeHtml(b.author)}</a>
+      </div>
       <div class="chips">${chips.map(c=>`<span class="chip">${escapeHtml(c)}</span>`).join('')}</div>
       <div class="row" style="margin-top:10px">
         <button class="btn nope" onclick="decide('want','${b.id}')">Want (+5)</button>
         <button class="btn ok" onclick="decide('reading','${b.id}')">Reading (+7)</button>
         <button class="btn gold" onclick="alreadyRead('${b.id}')">Already read</button>
       </div>
-      <div class="muted" style="margin-top:8px">Swipe left = Want · Swipe right = Reading · Tap “Already read” to add a reflection</div>
+      <div class="muted" style="margin-top:8px">Swipe left = Want · Swipe right = Reading · Tap “Already read” to add HookMarks</div>
     </div>
     <span class="badge-swipe like">READING</span>
     <span class="badge-swipe nope">WANT</span>
@@ -468,7 +562,7 @@ function alreadyRead(id){
   state.reflectingId = id; state.moodAfter.clear();
   document.getElementById('reflectText').value = "";
   document.getElementById('reflectNote').textContent = "";
-  document.getElementById('reflectTitle').textContent = `You read: ${book.title} — share your mood after & a takeaway`;
+  document.getElementById('reflectTitle').textContent = `You read: ${book.title} — add HookMarks`;
   document.getElementById('reflectCard').style.display = "";
 }
 
@@ -476,13 +570,25 @@ function cancelReflect(){ document.getElementById('reflectCard').style.display="
 function submitReflect(){
   if(!state.reflectingId) return;
   const id = state.reflectingId;
+  const book = BOOKS.find(x=>x.id===id);
   const mood = [...state.moodAfter][0]||null;
   const note = document.getElementById('reflectText').value.trim();
-  state.reviews.push({id, moodAfter:mood, note, ts:Date.now()});
-  persist('bh_reviews', state.reviews);
+  const tags = {
+    lol: document.getElementById('tagLOL').checked,
+    aha: document.getElementById('tagAha').checked,
+    brk: document.getElementById('tagBreak').checked
+  };
+  state.hookmarks.push({
+    id: 'hm_'+Date.now(), bookId: id, bookTitle: book?.title||"", author: book?.author||"",
+    moodAfter: mood, note, tags, reader: "You", ts: Date.now()
+  });
+  persist('bh_hooks', state.hookmarks);
   addPts(10);
   document.getElementById('reflectNote').textContent = "Saved — thanks for sharing!";
   updateStats();
+  rebuildLeaderboards();
+  // reset tag boxes
+  ['tagLOL','tagAha','tagBreak'].forEach(x=>document.getElementById(x).checked=false);
   setTimeout(()=>{ document.getElementById('reflectCard').style.display="none"; }, 600);
 }
 
@@ -496,7 +602,7 @@ function renderShelf(){
       <div class="thumb">${b.image?`<img src="${b.image}" alt="">`:""}</div>
       <div>
         <div style="font-weight:700">${escapeHtml(b.title)}</div>
-        <div class="muted">by ${escapeHtml(b.author)}</div>
+        <div class="muted">by <a class="link" href="#community" onclick="openAuthor('${b.author}')">${escapeHtml(b.author)}</a></div>
         <div class="row" style="margin-top:6px"><span class="stat ${b.status}">${b.status}</span></div>
       </div>
       <div class="row">
@@ -511,21 +617,203 @@ function removeFromShelf(id){
   renderShelf(); updateStats();
 }
 
-/* Profiles */
-function saveProfile(){
-  state.profile = { isReader: document.getElementById('isReader').checked,
-                    isAuthor: document.getElementById('isAuthor').checked };
-  persist('bh_profile', state.profile);
+/* HookMarks hub */
+function initHookFilters(){
+  const fb = document.getElementById('filterBook');
+  const fr = document.getElementById('filterReader');
+  fb.innerHTML = `<option value="">All books</option>` + BOOKS.map(b=>`<option value="${b.id}">${escapeHtml(b.title)}</option>`).join('');
+  // simple reader filter: "All readers" + "You"
+  const readers = Array.from(new Set(["You", ...state.hookmarks.map(h=>h.reader)])).filter(Boolean);
+  fr.innerHTML = `<option value="">All readers</option>` + readers.map(r=>`<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`).join('');
 }
+function setHookMarksFilterMine(){
+  document.getElementById('filterReader').value = 'You';
+  renderHookMarks();
+}
+function clearHookFilters(){
+  document.getElementById('filterBook').value = '';
+  document.getElementById('filterReader').value = '';
+  renderHookMarks();
+}
+function renderHookMarks(){
+  const box=document.getElementById('notesList'), empty=document.getElementById('notesEmpty');
+  const fb=document.getElementById('filterBook').value;
+  const fr=document.getElementById('filterReader').value;
+  const notes = state.hookmarks.filter(h=>(!fb||h.bookId===fb) && (!fr||h.reader===fr));
+  if(!notes.length){ box.innerHTML=""; empty.style.display=""; return; }
+  empty.style.display="none";
+  box.innerHTML = notes.slice().reverse().map(h=>`
+    <div class="noteItem">
+      <div class="row" style="justify-content:space-between">
+        <div><b>${escapeHtml(h.bookTitle)}</b> — <a class="link" href="#community" onclick="openAuthor('${h.author}')">${escapeHtml(h.author)}</a></div>
+        <div class="muted">${new Date(h.ts).toLocaleDateString()}</div>
+      </div>
+      <div class="row">
+        ${h.tags?.lol?'<span class="tagmini">LOL</span>':''}
+        ${h.tags?.aha?'<span class="tagmini">AHA</span>':''}
+        ${h.tags?.brk?'<span class="tagmini">Breakthrough</span>':''}
+        ${h.moodAfter?`<span class="tagmini">Mood after: ${escapeHtml(h.moodAfter)}</span>`:''}
+        <span class="tagmini">By: ${escapeHtml(h.reader)}</span>
+      </div>
+      ${h.note?`<div class="muted" style="margin-top:6px">${escapeHtml(h.note)}</div>`:''}
+    </div>
+  `).join('');
+}
+
+/* Community */
+function openAuthor(name){
+  scrollToId('community');
+  showCommunity('authors', name);
+}
+function showCommunity(tab, focusName){
+  const list = document.getElementById('communityList'); list.innerHTML = "";
+  if(tab==='authors'){
+    // recompute impact from HookMarks
+    const impactMap = {}; // author -> {lol,aha,brk}
+    state.hookmarks.forEach(h=>{
+      const a = h.author||"";
+      if(!impactMap[a]) impactMap[a]={lol:0,aha:0,brk:0};
+      if(h.tags?.lol) impactMap[a].lol++;
+      if(h.tags?.aha) impactMap[a].aha++;
+      if(h.tags?.brk) impactMap[a].brk++;
+    });
+    const cards = AUTHORS.map(a=>{
+      const imp = impactMap[a.name] || {lol:0,aha:0,brk:0};
+      return {...a, impact: imp};
+    });
+    list.innerHTML = cards.map(a=>`
+      <div class="cardUser" id="auth_${cssId(a.name)}">
+        <div class="avatar">${escapeHtml(a.name.slice(0,1))}</div>
+        <div>
+          <div><b>${escapeHtml(a.name)}</b> <span class="stat">AUTHOR</span></div>
+          <div class="muted">${escapeHtml(a.bio||'')}</div>
+          <div class="row" style="margin-top:6px">
+            <span class="tagmini">LOL ★${a.impact.lol}</span>
+            <span class="tagmini">AHA ★${a.impact.aha}</span>
+            <span class="tagmini">Breakthrough ★${a.impact.brk}</span>
+          </div>
+        </div>
+        <div class="row">
+          <button class="btn" onclick="starAuthor('${a.name}')">⭐</button>
+        </div>
+      </div>
+    `).join('');
+    if(focusName){
+      const el = document.getElementById('auth_'+cssId(focusName));
+      if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+  }else{
+    // Readers (simple view: seeded + you with live counts)
+    const youCount = state.hookmarks.filter(h=>h.reader==="You").length;
+    const readers = [{name:"You", hooks:youCount}, ...READERS.filter(r=>r.name!=="You")];
+    list.innerHTML = readers.map(r=>`
+      <div class="cardUser">
+        <div class="avatar">${escapeHtml(r.name.slice(0,1))}</div>
+        <div>
+          <div><b>${escapeHtml(r.name)}</b> <span class="stat">READER</span></div>
+          <div class="row" style="margin-top:6px">
+            <span class="tagmini">HookMarks: ${r.hooks}</span>
+          </div>
+        </div>
+        <div class="row">
+          <a class="btn" href="#hookHub" onclick="${r.name==='You'?'setHookMarksFilterMine()':'filterByReader('+JSON.stringify(r.name)+')'}">View</a>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+function filterByReader(name){
+  document.getElementById('filterReader').value = name;
+  renderHookMarks();
+}
+
+/* Favorites */
+function starAuthor(name){
+  if(!state.profile.favorites) state.profile.favorites=[];
+  if(!state.profile.favorites.includes(name)){
+    state.profile.favorites.push(name);
+    persist('bh_profile', state.profile);
+    renderFavorites();
+  }
+}
+function renderFavorites(){
+  const box=document.getElementById('favAuthors'), empty=document.getElementById('favEmpty');
+  const favs = state.profile.favorites||[];
+  if(!favs.length){ box.innerHTML=""; empty.style.display=""; return; }
+  empty.style.display="none";
+  box.innerHTML = favs.map(n=>`
+    <div class="cardUser">
+      <div class="avatar">${escapeHtml(n.slice(0,1))}</div>
+      <div><div><b>${escapeHtml(n)}</b> <span class="stat">AUTHOR</span></div></div>
+      <div class="row">
+        <a class="btn" href="#community" onclick="openAuthor('${n}')">View</a>
+        <button class="btn" onclick="unstarAuthor('${n}')">Remove</button>
+      </div>
+    </div>
+  `).join('');
+}
+function unstarAuthor(name){
+  state.profile.favorites = (state.profile.favorites||[]).filter(x=>x!==name);
+  persist('bh_profile', state.profile);
+  renderFavorites();
+}
+
+/* Profile */
+function saveProfile(){
+  state.profile.isReader = document.getElementById('isReader').checked;
+  state.profile.isAuthor = document.getElementById('isAuthor').checked;
+  persist('bh_profile', state.profile);
+  renderBadges();
+}
+function renderBadges(){
+  document.getElementById('badgeReader').style.display = state.profile.isReader?'':'none';
+  document.getElementById('badgeAuthor').style.display = state.profile.isAuthor?'':'none';
+}
+
+/* Leaderboards */
+function rebuildLeaderboards(){
+  // Authors impact
+  const impactMap = {};
+  state.hookmarks.forEach(h=>{
+    const a=h.author||""; if(!a) return;
+    if(!impactMap[a]) impactMap[a]={lol:0,aha:0,brk:0};
+    if(h.tags?.lol) impactMap[a].lol++;
+    if(h.tags?.aha) impactMap[a].aha++;
+    if(h.tags?.brk) impactMap[a].brk++;
+  });
+  const lbA = Object.entries(impactMap).map(([name,imp])=>({name,score:imp.lol+imp.aha+imp.brk,imp}))
+               .sort((x,y)=>y.score-x.score).slice(0,10);
+  document.getElementById('lbAuthors').innerHTML = lbA.length? lbA.map(a=>`
+    <div class="noteItem">
+      <b>${escapeHtml(a.name)}</b> · Impact: ${a.score}
+      <div class="row" style="margin-top:6px">
+        <span class="tagmini">LOL ★${a.imp.lol}</span>
+        <span class="tagmini">AHA ★${a.imp.aha}</span>
+        <span class="tagmini">Breakthrough ★${a.imp.brk}</span>
+      </div>
+    </div>`).join('') : '<div class="muted">No author impact yet.</div>';
+
+  // Readers by HookMarks count
+  const readerMap = {};
+  state.hookmarks.forEach(h=>{ readerMap[h.reader]=(readerMap[h.reader]||0)+1; });
+  const lbR = Object.entries(readerMap).map(([name,c])=>({name,c})).sort((a,b)=>b.c-a.c).slice(0,10);
+  document.getElementById('lbReaders').innerHTML = lbR.length? lbR.map(r=>`
+    <div class="noteItem"><b>${escapeHtml(r.name)}</b> · HookMarks: ${r.c}</div>
+  `).join('') : '<div class="muted">No reader HookMarks yet.</div>';
+}
+
+/* Badges & stats */
 function updateStats(){
   const want = state.shelf.filter(x=>x.status==='want').length;
   const reading = state.shelf.filter(x=>x.status==='reading').length;
   const read = state.shelf.filter(x=>x.status==='read').length;
-  const rated = state.reviews.length;
+  const rated = state.hookmarks.filter(h=>h.reader==="You").length;
   document.getElementById('statWant').textContent = want;
   document.getElementById('statReading').textContent = reading;
   document.getElementById('statRead').textContent = read;
   document.getElementById('statRated').textContent = rated;
+  // update HookFilters (readers list may grow)
+  initHookFilters();
 }
 
 /* Points */
@@ -564,6 +852,7 @@ async function resolveCover(book){
 /* Utils */
 function persist(k,v){ localStorage.setItem(k, typeof v==='string'?v:JSON.stringify(v)); }
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
+function cssId(s){return s.replace(/\s+/g,'_').replace(/[^\w\-]/g,'');}
 </script>
 </body>
 </html>
