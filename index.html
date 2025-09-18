@@ -870,5 +870,18 @@ function persist(k,v){ localStorage.setItem(k, typeof v==='string'?v:JSON.string
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
 function cssId(s){return s.replace(/\s+/g,'_').replace(/[^\w\-]/g,'');}
 </script>
+  /* ==== HOTFIX: keep book tags horizontal ==== */
+.chips{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  gap:8px !important;
+  align-items:center !important;
+}
+.chips > .chip{
+  display:inline-flex !important;
+  align-items:center !important;
+  white-space:nowrap !important;   /* each pill stays on one line */
+}
+.chips br{ display:none !important; }  /* in case <br> snuck in */
 </body>
 </html>
