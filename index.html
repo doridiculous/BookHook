@@ -60,12 +60,16 @@ h2{margin:0 0 8px}
 .legend span{padding:2px 6px;border:1px solid var(--line);border-radius:999px;background:#fff}
 .counter{font-size:12px;color:#666}
 
+/* Mood/Vibe card */
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#f6f6f6;cursor:pointer}
+.pill.on{background:#000;color:#fff;border-color:#000}
+.field{width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; font:inherit}
+
 /* Modal */
 .mask{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;padding:16px}
 .modal{max-width:560px;width:100%;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
 .modal h3{margin:0 0 10px}
-.field{width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; font:inherit}
-select.field{height:40px}
 
 /* Shelf */
 .shelf{display:flex;flex-direction:column;gap:10px}
@@ -82,6 +86,7 @@ select.field{height:40px}
 </header>
 
 <main class="wrap">
+  <!-- SWIPE FIRST -->
   <section class="card" id="swipeCard">
     <h2>Discover</h2>
     <div class="legend">
@@ -90,6 +95,25 @@ select.field{height:40px}
     <div id="swipe" class="swipe"></div>
   </section>
 
+  <!-- Mood & Desired Read BELOW swipe (optional points) -->
+  <section class="card">
+    <h2>Your Reading Vibe</h2>
+    <div class="row">
+      <div class="small" style="min-width:110px;color:#555">Mood now</div>
+      <div id="moodNow" class="pills"></div>
+    </div>
+    <div class="row">
+      <div class="small" style="min-width:110px;color:#555">Desired read</div>
+      <div id="desiredRead" class="pills"></div>
+    </div>
+    <div class="row" style="margin-top:8px;justify-content:flex-end">
+      <button class="btn ghost" onclick="resetVibe()">Reset</button>
+      <button class="btn good" onclick="saveVibe()">Save vibe (+3)</button>
+    </div>
+    <div class="small muted">Tip: logging your vibe helps future matches and earns a few points.</div>
+  </section>
+
+  <!-- Shelf -->
   <section class="card">
     <h2>Your Shelf</h2>
     <div id="shelf" class="shelf"></div>
@@ -123,7 +147,7 @@ select.field{height:40px}
 <div id="toast" class="toast"></div>
 
 <script>
-/* ---------- Books (add here). Use image when you have it. ---------- */
+/* ---------- Books ---------- */
 const BOOKS = [
   {
     id:"mabunny",
@@ -132,7 +156,7 @@ const BOOKS = [
     vibes:["Inspiring","Playful","Comedic","Uplifting"],
     facts:{pace:"Fast", pages:248, year:2025},
     gold:true,
-    image:"", // ← paste the real Amazon image URL here (https://m.media-amazon.com/images/....jpg)
+    image:"", // paste Amazon cover URL here if you have it
     links:{buy:"#",site:"#"},
     tags:["Family-friendly","Quest"]
   },
@@ -143,7 +167,7 @@ const BOOKS = [
     vibes:["Funny","Satirical","Empowering","Chill","Mindset-shifting"],
     facts:{pace:"Medium", pages:312, year:2024},
     gold:true,
-    image:"", // leave blank to auto-resolve
+    image:"", // will auto-resolve
     links:{buy:"#", site:"#"},
     tags:["Sci-Fi Comedy","Feel-good"]
   },
@@ -169,27 +193,37 @@ const BOOKS = [
   }
 ];
 
-/* ---------------- State ---------------- */
+/* ---------- Vibe controls ---------- */
+const MOOD_LEVELS = ["Low","Medium","High"];
+const DESIRED = [
+  "Restful","Reflective","Insightful","Empowering","Intriguing",
+  "Educational","Comedic","Silly","Inspiring","Arousing",
+  "Uplifting","Self-loving","Entrepreneurial"
+];
+
+/* ---------- State ---------- */
 const state = {
   pts: Number(localStorage.getItem("bh_pts")||0),
   deck: [], idx: 0,
   shelf: JSON.parse(localStorage.getItem("bh_shelf")||"[]"),
-  pendingRead: null
+  pendingRead: null,
+  vibe:{ mood:"", desired:new Set(JSON.parse(localStorage.getItem("bh_desired")||"[]")) }
 };
 function saveShelf(){ localStorage.setItem("bh_shelf", JSON.stringify(state.shelf)); }
 function addPts(n){ state.pts+=n; localStorage.setItem("bh_pts",state.pts); document.getElementById("pts").textContent=state.pts+" pts"; const t=document.getElementById("toast"); t.textContent=`+${n} pts`; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),900); }
 function setCount(){ const c=document.getElementById("count"); c.textContent = state.deck.length? `${(state.idx%state.deck.length)+1} / ${state.deck.length}` : ""; }
 
-/* ---------------- Init ---------------- */
+/* ---------- Init ---------- */
 document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("pts").textContent = state.pts + " pts";
-  await ensureCovers();              // try to fetch covers for those missing
-  state.deck = BOOKS.filter(b=>!!b.image); // only keep books with a real cover
+  buildVibeUI();
+  await ensureCovers();
+  state.deck = BOOKS.filter(b=>!!b.image);
   showCard(); setCount();
   renderShelf();
 });
 
-/* ----------- Cover resolution (Google Books -> Open Library) ----------- */
+/* ---------- Covers ---------- */
 async function ensureCovers(){
   const jobs = BOOKS.filter(b=>!b.image).map(async b=>{
     const url = await resolveCover(b.title, b.author);
@@ -198,7 +232,6 @@ async function ensureCovers(){
   await Promise.allSettled(jobs);
 }
 async function resolveCover(title, author){
-  // Google Books
   try{
     const q = encodeURIComponent(`intitle:${title} inauthor:${author}`);
     const r = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1`);
@@ -208,8 +241,7 @@ async function resolveCover(title, author){
                || j?.items?.[0]?.volumeInfo?.imageLinks?.smallThumbnail;
       if(img) return img.replace("http://","https://");
     }
-  }catch(e){/* ignore */}
-  // Open Library (search -> cover id)
+  }catch(e){}
   try{
     const q2 = encodeURIComponent(`${title} ${author}`);
     const r2 = await fetch(`https://openlibrary.org/search.json?q=${q2}&limit=1`);
@@ -218,18 +250,18 @@ async function resolveCover(title, author){
       const id = j2?.docs?.[0]?.cover_i;
       if(id) return `https://covers.openlibrary.org/b/id/${id}-L.jpg`;
     }
-  }catch(e){/* ignore */}
+  }catch(e){}
   return null;
 }
 
-/* ---------------- Swipe Card ---------------- */
+/* ---------- Swipe card ---------- */
 function current(){ return state.deck[state.idx % state.deck.length]; }
 function nextCard(){ state.idx=(state.idx+1)%state.deck.length; showCard(); setCount(); }
 
 function showCard(){
   const b = current();
   const el = document.getElementById("swipe");
-  if(!b){ el.innerHTML='<div class="muted">Fetching covers… If nothing shows, add a real cover URL to your books.</div>'; return; }
+  if(!b){ el.innerHTML='<div class="muted">Fetching covers…</div>'; return; }
 
   const vibes = (b.vibes||[]);
   const primary = vibes.slice(0,4);
@@ -241,9 +273,7 @@ function showCard(){
       <div class="cover"><img src="${b.image}" alt="Cover of ${escape(b.title)}"></div>
       <div>
         <div class="row" style="justify-content:space-between">
-          <div class="row" style="gap:6px">
-            ${b.gold?'<span class="badge gold">Featured</span>':''}
-          </div>
+          <div class="row" style="gap:6px">${b.gold?'<span class="badge gold">Featured</span>':''}</div>
           <span class="badge gold" id="ptsTop">${state.pts} pts</span>
         </div>
 
@@ -257,7 +287,6 @@ function showCard(){
         <div class="kpis">${kpis.map(x=>`<span class="kpi">${escape(x)}</span>`).join('')}</div>
 
         <div class="divider"></div>
-
         <div class="row">
           <button class="btn info"  onclick="fileWant()">Want (+5)</button>
           <button class="btn good"  onclick="fileReading()">Reading (+7)</button>
@@ -277,7 +306,6 @@ function showCard(){
       <span class="badge-swipe read">READ</span>
     </div>
   `;
-
   addSwipe(document.getElementById("card"), fileWant, fileReading, openReadModal);
 }
 
@@ -287,7 +315,6 @@ function addSwipe(el, onLeft, onRight, onUp){
   const want = el.querySelector('.badge-swipe.want');
   const like = el.querySelector('.badge-swipe.like');
   const read = el.querySelector('.badge-swipe.read');
-
   const down = e=>{ drag=true; startX=e.clientX ?? e.touches?.[0]?.clientX; startY=e.clientY ?? e.touches?.[0]?.clientY; el.style.transition=''; };
   const move = e=>{
     if(!drag) return;
@@ -296,10 +323,8 @@ function addSwipe(el, onLeft, onRight, onUp){
     const rot = dx/14;
     el.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg)`;
     const ax = Math.min(1, Math.abs(dx)/120);
-    const ay = Math.min(1, Math.max(0, -dy)/120); // up only
-    if(dx<0){ want.style.opacity=ax; like.style.opacity=0; }
-    else if(dx>0){ like.style.opacity=ax; want.style.opacity=0; }
-    else { want.style.opacity=0; like.style.opacity=0; }
+    const ay = Math.min(1, Math.max(0, -dy)/120);
+    if(dx<0){ want.style.opacity=ax; like.style.opacity=0; } else if(dx>0){ like.style.opacity=ax; want.style.opacity=0; } else { want.style.opacity=0; like.style.opacity=0; }
     read.style.opacity = ay;
   };
   const end = ()=>{
@@ -312,14 +337,13 @@ function addSwipe(el, onLeft, onRight, onUp){
   };
   const snap = ()=>{ el.style.transition='transform .2s'; el.style.transform='translate(0,0) rotate(0)'; want.style.opacity=0; like.style.opacity=0; read.style.opacity=0; };
   const fling=(tx,ty,rot,cb)=>{ el.style.transition='transform .2s'; el.style.transform=`translate(${tx}px,${ty}px) rotate(${rot}deg)`; setTimeout(cb,160); };
-
   el.addEventListener('pointerdown',down);
   el.addEventListener('pointermove',move);
   el.addEventListener('pointerup',end);
   el.addEventListener('pointercancel',end);
 }
 
-/* filing actions + shelf */
+/* filing + shelf */
 function ensureOnShelf(book){
   let it = state.shelf.find(x=>x.id===book.id);
   if(!it){ it={id:book.id,title:book.title,author:book.author,image:book.image,status:'want'}; state.shelf.unshift(it); saveShelf(); }
@@ -332,7 +356,7 @@ function openReadModal(fromShelfId=null){
   const it = fromShelfId ? state.shelf.find(x=>x.id===fromShelfId) : currentAndEnsure();
   state.pendingRead = it;
   document.getElementById('modalTitle').textContent = `Mark as read: ${it.title}`;
-  document.getElementById('modalSub').textContent = 'Share how it changed you — this helps future matches.';
+  document.getElementById('modalSub').textContent = 'Share how it changed you — this powers better matches.';
   document.getElementById('moodBefore').value='';
   document.getElementById('moodAfter').value='';
   document.getElementById('takeaway').value='';
@@ -381,7 +405,44 @@ function renderReflection(r){
 }
 function removeFromShelf(id){ state.shelf = state.shelf.filter(x=>x.id!==id); saveShelf(); renderShelf(); }
 
-/* Utils */
+/* ---------- Mood/Vibe UI ---------- */
+function buildPills(id, options, setObj){
+  const box = document.getElementById(id); box.innerHTML='';
+  options.forEach(label=>{
+    const b = document.createElement('button');
+    b.className='pill'; b.textContent=label;
+    if(setObj.has && setObj.has(label)) b.classList.add('on');
+    b.onclick=()=>{
+      if(setObj.has(label)){ setObj.delete(label); b.classList.remove('on'); }
+      else { setObj.add(label); b.classList.add('on'); }
+    };
+    box.appendChild(b);
+  });
+}
+function buildVibeUI(){
+  // mood now (single select)
+  const moodBox = document.getElementById('moodNow'); moodBox.innerHTML='';
+  MOOD_LEVELS.forEach(m=>{
+    const b=document.createElement('button'); b.className='pill'; b.textContent=m;
+    if(state.vibe.mood===m) b.classList.add('on');
+    b.onclick=()=>{ state.vibe.mood = (state.vibe.mood===m?'':m); [...moodBox.children].forEach(c=>c.classList.remove('on')); if(state.vibe.mood) b.classList.add('on'); };
+    moodBox.appendChild(b);
+  });
+  // desired read (multi)
+  buildPills('desiredRead', DESIRED, state.vibe.desired);
+}
+function resetVibe(){
+  state.vibe.mood=''; state.vibe.desired = new Set();
+  buildVibeUI();
+}
+function saveVibe(){
+  localStorage.setItem('bh_mood', state.vibe.mood||'');
+  localStorage.setItem('bh_desired', JSON.stringify([...state.vibe.desired]));
+  addPts(3); toast('Vibe saved');
+}
+
+/* ---------- Utils ---------- */
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),900); }
 function escape(s){return String(s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
 </script>
 </body>
