@@ -17,6 +17,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 -apple-system,B
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0;box-shadow:0 1px 8px rgba(0,0,0,.03)}
 h1,h2{margin:0 0 10px}
 .muted{color:var(--muted);font-size:14px}
+.link{color:#0a66c2;text-decoration:none}
 .divider{height:1px;background:var(--line);margin:12px 0}
 
 /* top nav/status */
@@ -42,13 +43,18 @@ h1,h2{margin:0 0 10px}
 .pill.on{background:#111;color:#fff;border-color:#111}
 .field{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;font:inherit}
 
+/* segmented control (feeling level) */
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{border:0;background:#fff;padding:8px 14px;cursor:pointer;font-weight:600}
+.seg button.on{background:#111;color:#fff}
+
 /* discover swipe card */
 .swipe{display:grid;grid-template-columns:210px 1fr;gap:16px}
 @media (max-width:740px){.swipe{grid-template-columns:1fr}}
 .cover{width:100%;aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:48px}
 .cover img{width:100%;height:100%;object-fit:cover;display:block}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;align-items:center}
-.chip{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fafafa;font-size:13px;display:inline-flex}
+.chip{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fafafa;font-size:13px;display:inline-flex;white-space:nowrap}
 .hint{background:#fff7cc;border:1px solid #E7C200;padding:6px 10px;border-radius:999px;font-weight:600;font-size:12px}
 
 /* swipe gestures */
@@ -66,6 +72,9 @@ h1,h2{margin:0 0 10px}
 .stat.want{background:#eef3ff;border-color:#cfe1ff}
 .stat.reading{background:#eaf8ed;border-color:#b8e4c3}
 .stat.read{background:#fff0d2;border-color:#f7dc8a}
+
+/* HOTFIX to guarantee horizontal chips even if <br> sneaks in */
+.chips br{display:none !important;}
 </style>
 </head>
 
@@ -84,11 +93,10 @@ h1,h2{margin:0 0 10px}
   <main class="wrap">
     <!-- HERO: SVG black logo + rotating tagline -->
     <section class="hero">
-      <!-- Original black logo (no upload needed) -->
+      <!-- Original black logo (rounded square + white “hook hole”). No upload needed. -->
       <svg class="logo" viewBox="0 0 64 64" width="56" height="56" aria-label="BookHook">
         <rect x="8" y="8" width="48" height="48" rx="12" fill="#000"/>
-        <!-- simple "hook hole" -->
-        <circle cx="32" cy="32" r="10" fill="#fff"/>
+        <circle cx="26" cy="26" r="10" fill="#fff"/>
       </svg>
       <div class="logo-text">BookHook</div>
       <div id="rotTag" class="tagline">Match readers ↔ authors by vibe</div>
@@ -99,13 +107,17 @@ h1,h2{margin:0 0 10px}
       <!-- How I'm feeling -->
       <section class="card">
         <h2>How I’m feeling</h2>
-        <input id="moodFree" class="field" placeholder="I am feeling … (tired, anxious, pumped…)" />
+        <div class="row">
+          <input id="moodFree" class="field" placeholder="I am feeling … (tired, anxious, pumped…)" />
+          <button id="setMoodFree" class="btn small">Set</button>
+        </div>
         <div class="row">
           <span class="lbl">Level:</span>
-          <button class="pill" data-level="Low">Low</button>
-          <button class="pill" data-level="Medium">Medium</button>
-          <button class="pill" data-level="High">High</button>
-          <button id="setMoodFree" class="btn small">Set</button>
+          <div class="seg" id="segLevel">
+            <button data-level="Low">Low</button>
+            <button data-level="Medium">Medium</button>
+            <button data-level="High">High</button>
+          </div>
         </div>
         <div class="muted">Type anything (“overwhelmed”, “hyped”) or tap a level. This nudges your matches.</div>
       </section>
@@ -113,7 +125,7 @@ h1,h2{margin:0 0 10px}
       <!-- Desired Mood (categorised) -->
       <section class="card">
         <h2>Desired Mood</h2>
-        <div id="desiredTabs" class="row"></div>
+        <div class="row" id="desiredTabs"></div>
         <div id="desiredPills" class="pills"></div>
         <div class="muted">Choose a few — these steer the match score below.</div>
       </section>
@@ -226,8 +238,7 @@ const BOOKS = [
     author:"Jef & Mindy",
     vibes:["Funny","Satirical","Empowering","Chill","Feel-good"],
     facts:{pace:"Medium", pages:312, year:2024},
-    gold:true, links:{site:"#",buy:"#"},
-    // leave image blank to auto-fetch; add b.image if you get a fixed URL
+    gold:true, links:{site:"#",buy:"#"}
   },
   {
     id:"mag",
@@ -269,8 +280,7 @@ const state = {
 /* ========= Init ========= */
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("pts").textContent = state.pts+" pts";
-  renderDesiredTabs();
-  renderDesiredPills();
+  renderDesiredTabs(); renderDesiredPills();
   wireMoodControls();
   refreshMatches(); show(0);
   renderShelf(); renderHookMarks(); updateStats();
@@ -299,41 +309,36 @@ function updateStats(){
 function renderDesiredTabs(){
   const box = document.getElementById("desiredTabs"); box.innerHTML="";
   DESIRED_CATS.forEach(cat=>{
-    const b = document.createElement("button"); b.className="btn small"; b.textContent=cat.name;
-    b.onclick=()=>{scrollToId('desiredPills')};
+    const b=document.createElement("button"); b.className="btn small"; b.textContent=cat.name;
+    b.onclick=()=>document.getElementById('desiredPills')?.scrollIntoView({behavior:'smooth'});
     box.appendChild(b);
   });
 }
 function renderDesiredPills(){
   const box = document.getElementById("desiredPills"); box.innerHTML="";
   DESIRED_CATS.forEach(cat=>{
-    const label = document.createElement("div");
-    label.className="lbl"; label.textContent = cat.name;
-    box.appendChild(label);
+    const h=document.createElement("div"); h.className="lbl"; h.textContent=cat.name; box.appendChild(h);
     cat.items.forEach(name=>{
-      const p = document.createElement("button");
-      p.className = "pill"; p.textContent = name;
-      p.onclick = ()=>{ toggleSet(state.desired,name,p); refreshMatches(); };
+      const p=document.createElement("button"); p.className="pill"; p.textContent=name;
+      p.onclick=()=>{ if(state.desired.has(name)){state.desired.delete(name);p.classList.remove("on");}
+                      else{state.desired.add(name);p.classList.add("on");}
+                      refreshMatches(); };
       box.appendChild(p);
     });
   });
 }
-function toggleSet(set, name, pill){
-  if(set.has(name)){ set.delete(name); pill.classList.remove("on"); }
-  else{ set.add(name); pill.classList.add("on"); }
-}
-function scrollToId(id){ document.getElementById(id)?.scrollIntoView({behavior:'smooth'}); }
 
 /* ========= Mood controls ========= */
 function wireMoodControls(){
-  document.querySelectorAll('[data-level]').forEach(el=>{
-    el.onclick = ()=> setSingle("moodLevel", el.getAttribute('data-level'));
+  document.querySelectorAll('#segLevel [data-level]').forEach(el=>{
+    el.onclick=()=> setSingle("moodLevel", el.getAttribute('data-level'));
   });
+  setSingle("moodLevel","Medium"); // default
   document.getElementById('setMoodFree').onclick = ()=> mapFreeMood(document.getElementById('moodFree').value);
 }
 function setSingle(key,value){
   state[key]=value;
-  document.querySelectorAll(`[data-level]`).forEach(b=>b.classList.toggle('on', b.getAttribute('data-level')===value));
+  document.querySelectorAll('#segLevel [data-level]').forEach(b=>b.classList.toggle('on', b.getAttribute('data-level')===value));
   refreshMatches();
 }
 
@@ -346,9 +351,7 @@ function score(b){
   if(b.gold) s+=2.0;
   return s;
 }
-function refreshMatches(){
-  state.order = [...BOOKS].sort((a,b)=>score(b)-score(a));
-}
+function refreshMatches(){ state.order = [...BOOKS].sort((a,b)=>score(b)-score(a)); }
 
 /* ========= Swipe card rendering ========= */
 function show(idx){
