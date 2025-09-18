@@ -85,17 +85,31 @@
   .badge-swipe.nope{ right:14px; color:var(--nope); border-color:var(--nope); }
 
   /* Inputs */
-  .field{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;font:inherit}
+  .field{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;font:
 
-  /* Shelf */
-  .list{display:flex;flex-direction:column;gap:10px}
-  .tile{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:12px;background:#fff}
-  .tile .thumb{width:64px;height:96px;border-radius:8px;background:#eee;overflow:hidden}
-  .thumb img{width:100%;height:100%;object-fit:cover}
-  .stat{padding:4px 8px;border-radius:999px;border:1px solid var(--line);background:#f6f6f6;font-size:12px}
-  .stat.want{background:#eef3ff;border-color:#cfe1ff}
-  .stat.reading{background:#eaf8ed;border-color:#b8e4c3}
-  .stat.read{background:#fff0d2;border-color:#f7dc8a}
+  <!-- Discover page: no bookshelf (just a small link) -->
+<section class="card" id="discoverFooter">
+  <div class="muted">Your saved books are now in <a href="#profile" onclick="showPage('profile')">My Profile</a>.</div>
+</section>
+
+<!-- Profile page: full bookshelf lives here -->
+<section class="card page" id="profile" style="display:none">
+  <h2>My Profile</h2>
+
+  <div class="profileRow">
+    <div class="profileCol">
+      <h3>Stats</h3>
+      <div class="statLine"><b>Role:</b> <span id="profileRole">Reader</span></div>
+      <div class="statLine"><b>Points:</b> <span id="profilePts">0</span></div>
+      <div class="statLine"><b>HookMarks:</b> <span id="profileHooks">0</span></div>
+    </div>
+
+    <div class="profileCol">
+      <h3>Your Bookshelf</h3>
+      <div id="shelf" class="list muted">Save a book to see it here.</div>
+    </div>
+  </div>
+</section>
 
   /* Tabs for Desired Mood */
   .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
