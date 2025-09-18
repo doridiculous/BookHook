@@ -70,14 +70,26 @@ h1,h2{margin:0 0 10px}
 </head>
 <body>
   <!-- top bar -->
-  <header class="bar">
-    <div class="nav">
-      <button class="btn small" onclick="showSection('discover')">Discover</button>
-      <button class="btn small" onclick="showSection('hookmarks')">HookMarks</button>
-      <button class="btn small" onclick="showSection('profile')">My Profile</button>
-    </div>
-    <div class="status"><span class="badge">Bronze</span><span id="pts" class="badge gold">0 pts</span></div>
-  </header>
+  .hero_logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.logo-text {
+  color: #000;
+}
+
+.tagline {
+  text-align: center;
+  margin: 6px 0 20px;
+  font-size: 14px;
+  color: #555;
+  font-style: italic;
+}
 
   <main class="wrap">
     <!-- HERO: original black logo + tagline (no upload needed) -->
