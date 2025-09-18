@@ -94,10 +94,15 @@ h1,h2{margin:0 0 10px}
     <!-- HERO: SVG black logo + rotating tagline -->
     <section class="hero">
       <!-- Original black logo (rounded square + white “hook hole”). No upload needed. -->
-      <svg class="logo" viewBox="0 0 64 64" width="56" height="56" aria-label="BookHook">
-        <rect x="8" y="8" width="48" height="48" rx="12" fill="#000"/>
-        <circle cx="26" cy="26" r="10" fill="#fff"/>
-      </svg>
+      <!-- BookHook: simple black book mark -->
+<svg class="logo" viewBox="0 0 64 64" width="56" height="56" aria-label="BookHook">
+  <!-- book body -->
+  <rect x="8" y="8" width="48" height="48" rx="8" fill="#000"/>
+  <!-- page edge (white strip on the right) -->
+  <rect x="46" y="14" width="6" height="36" rx="2" fill="#fff"/>
+  <!-- dog-ear / page fold -->
+  <path d="M52 14 L52 24 L46 20 Z" fill="#fff"/>
+</svg>
       <div class="logo-text">BookHook</div>
       <div id="rotTag" class="tagline">Match readers ↔ authors by vibe</div>
     </section>
