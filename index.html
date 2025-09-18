@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>BookHook</title>
 <style>
+  /* Shelf */
+.list{display:flex;flex-direction:column;gap:10px}
+.tile{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;
+      padding:10px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.tile .thumb{width:64px;height:96px;border-radius:8px;background:#eee;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.stat{padding:4px 8px;border-radius:999px;border:1px solid var(--line);background:#f6f6f6;font-size:12px}
+.stat.want{background:#eef3ff;border-color:#cfe1ff}
+.stat.reading{background:#eaf8ed;border-color:#b8e4c3}
+.stat.read{background:#fff0d2;border-color:#f7dc8a}
   :root{
     --bg:#f7f7f8; --fg:#111; --muted:#666;
     --line:#e9e9ee; --card:#fff; --pill:#f4f4f6;
