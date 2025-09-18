@@ -4,7 +4,6 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>BookHook</title>
-
 <style>
   :root{
     --bg:#f7f7f8; --fg:#111; --muted:#666;
@@ -16,42 +15,47 @@
   body{margin:0;background:var(--bg);color:var(--fg);
        font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
   .wrap{max-width:980px;margin:0 auto;padding:18px 14px}
-  /* Top bar (points) */
+
+  /* Top status bar */
   .bar{display:flex;justify-content:flex-end;align-items:center;
        padding:8px 14px;border-bottom:1px solid var(--line);background:#fff;position:sticky;top:0;z-index:3}
   .badge{padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:600;font-size:12px}
   .badge.gold{background:#fff7cc;border-color:#E7C200}
-  /* Hero with centered logo */
+
+  /* Hero */
   .hero{display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 12px}
   .hero .logo{height:64px;display:block}
   .hero .brand{font-weight:800;font-size:22px}
   .rot{min-height:22px;font-weight:600;color:#222;text-align:center}
   .rot small{color:#777;font-weight:500}
+
   /* Cards */
   .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0;
         box-shadow:0 6px 24px var(--ring)}
   h2{margin:0 0 10px}
   .muted{color:var(--muted);font-size:14px}
 
-  /* Pills */
-  .pills{display:flex;flex-wrap:wrap;gap:8px}
-  .pill{padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:var(--pill);cursor:pointer}
+  /* Pills & rows */
+  .pills{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .pill{padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:var(--pill);cursor:pointer;display:inline-flex;align-items:center}
   .pill.on{background:#000;color:#fff;border-color:#000}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
 
+  /* Buttons */
   .btn{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:600}
   .btn.gold{background:var(--gold);border-color:#caa900;color:#000}
   .btn.ok{background:#eaf8ed;border-color:#b8e4c3;color:#0f6c25}
   .btn.nope{background:#fde9ea;border-color:#f5c4c8;color:#a01515}
 
-  /* Swipe card layout */
+  /* Discover swipe card */
   .swipe{display:grid;grid-template-columns:210px 1fr;gap:16px}
   @media (max-width:740px){.swipe{grid-template-columns:1fr}}
   .cover{width:100%;aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:#ddd;
          display:flex;align-items:center;justify-content:center;font-weight:800;font-size:48px}
   .cover img{width:100%;height:100%;object-fit:cover;display:block}
-  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
-  .chip{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fafafa;font-size:13px}
-  .bar-mini{display:flex;gap:8px;margin-bottom:8px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;align-items:center}
+  .chip{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fafafa;font-size:13px;display:inline-flex}
+  .bar-mini{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
   .tab{padding:6px 10px;border-radius:999px;border:1px solid var(--line);font-weight:600;font-size:12px;background:#fff}
   .tab.hint{background:#fff7cc;border-color:#E7C200}
 
@@ -63,7 +67,6 @@
 
   /* Inputs */
   .field{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;font:inherit}
-  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
 
   /* Shelf */
   .list{display:flex;flex-direction:column;gap:10px}
@@ -74,11 +77,20 @@
   .stat.want{background:#eef3ff;border-color:#cfe1ff}
   .stat.reading{background:#eaf8ed;border-color:#b8e4c3}
   .stat.read{background:#fff0d2;border-color:#f7dc8a}
+
+  /* Category tabs for Desired Mood */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  .tabbtn{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;cursor:pointer;font-weight:600;font-size:12px}
+  .tabbtn.on{background:#000;color:#fff;border-color:#000}
+
+  /* Footer banner */
+  .foot{padding:18px 14px;text-align:center;color:#222}
+  .foot .tag{display:inline-block;background:#fff7cc;border:1px solid #E7C200;color:#2b2100;padding:8px 12px;border-radius:999px;font-weight:700}
 </style>
 </head>
 <body>
 
-  <!-- Points/status bar -->
+  <!-- Status bar -->
   <div class="bar">
     <span id="tier" class="badge">Bronze</span>
     <span id="pts" class="badge gold" style="margin-left:8px">0 pts</span>
@@ -86,17 +98,38 @@
 
   <!-- Centered logo + rotating tagline -->
   <header class="hero">
-    <!-- If you uploaded assets/logo.png, this will show. Otherwise text fallback appears. -->
-    <img src="assets/logo.png" alt="BookHook logo" class="logo" onerror="this.replaceWith(Object.assign(document.createElement('div'),{textContent:'BookHook',className:'brand'}));">
+    <img src="assets/logo.png" alt="BookHook logo" class="logo"
+         onerror="this.replaceWith(Object.assign(document.createElement('div'),{textContent:'BookHook',className:'brand'}));">
     <div class="rot" id="rotTag"></div>
   </header>
 
   <main class="wrap">
 
+    <!-- How I'm feeling (free text + quick set) -->
+    <section class="card">
+      <h2>How I’m feeling</h2>
+      <div class="row">
+        <input id="feelText" class="field" placeholder="I am feeling … (tired, anxious, pumped…)" style="max-width:420px">
+        <button class="btn" onclick="mapFreeMood()">Set</button>
+      </div>
+      <div class="row">
+        <b>Level:</b>
+        <div id="moodLevel" class="pills" aria-label="Low / Medium / High"></div>
+      </div>
+      <div class="muted">Tip: type anything (“overwhelmed”, “hyped”) or tap a level. This influences your matches.</div>
+    </section>
+
+    <!-- Desired Mood (categorized) -->
+    <section class="card">
+      <h2>Desired Mood</h2>
+      <div class="tabs" id="catTabs"></div>
+      <div id="desiredPills" class="pills" aria-label="desired mood pills"></div>
+      <div class="muted">Choose a few — these steer the match score in Discover.</div>
+    </section>
+
     <!-- Discover -->
     <section class="card" id="swipeCard">
       <div class="bar-mini">
-        <span class="tab hint">Dream Big · Do Ridiculous · Achieve Remarkable</span>
         <span class="tab">Swipe left: Want</span>
         <span class="tab">Swipe right: Reading</span>
         <span class="tab">Tap “Already read” to reflect</span>
@@ -104,28 +137,15 @@
       <div id="swipe" class="swipe"></div>
     </section>
 
-    <!-- Quick Mood setup (kept simple & compact) -->
-    <section class="card">
-      <h2>Your Mood & Goal</h2>
-      <div class="row">
-        <b>Before reading:</b>
-        <div id="moodBefore" class="pills" aria-label="mood before"></div>
-      </div>
-      <div class="row">
-        <b>Desired mood:</b>
-        <div id="desiredMood" class="pills" aria-label="desired mood"></div>
-      </div>
-      <div class="muted">Tip: these choices nudge the match score above.</div>
-    </section>
-
-    <!-- Reflection (appears after “Already read”) -->
+    <!-- Reflection -->
     <section class="card" id="reflectCard" style="display:none">
       <h2>Share your takeaway</h2>
       <div class="muted" id="reflectTitle"></div>
       <div class="row"><b>Mood after:</b>
         <div id="moodAfter" class="pills" aria-label="mood after"></div>
       </div>
-      <textarea id="reflectText" class="field" rows="4" placeholder="Any laughs, AHAs, mindset shifts, or feelings you want to remember?"></textarea>
+      <textarea id="reflectText" class="field" rows="4"
+        placeholder="Any laughs, AHAs, mindset shifts, or feelings you want to remember?"></textarea>
       <div class="row">
         <button class="btn" onclick="cancelReflect()">Cancel</button>
         <button class="btn gold" onclick="submitReflect()">Save reflection (+10)</button>
@@ -133,7 +153,7 @@
       <div class="muted" id="reflectNote"></div>
     </section>
 
-    <!-- Your Shelf -->
+    <!-- Shelf -->
     <section class="card">
       <h2>Your Shelf</h2>
       <div id="shelf" class="list"></div>
@@ -159,25 +179,44 @@
 
   </main>
 
+  <!-- Footer mantra -->
+  <footer class="foot">
+    <span class="tag">Dream Big · Do Ridiculous · Achieve Remarkable</span>
+  </footer>
+
 <script>
-/* -------------------- Brand taglines (rotate) -------------------- */
+/* ───────────────── Brand taglines ───────────────── */
 const taglines = [
   "Hook the right book for your mood.",
   "Swipe · Match · Read · Transform.",
   "Find books by how you want to feel.",
-  "Dream Big · Do Ridiculous · Achieve Remarkable."
+  "Stories that spark real-world wins."
 ];
 let t = 0;
 function rotateTag(){ const el = document.getElementById('rotTag'); if(!el) return;
-  el.innerHTML = `<small>${taglines[t]}</small>`; t=(t+1)%taglines.length;
-}
+  el.innerHTML = `<small>${taglines[t]}</small>`; t=(t+1)%taglines.length; }
 rotateTag(); setInterval(rotateTag, 3000);
 
-/* -------------------- Data -------------------- */
-const MOOD = ["Low","Medium","High"];
-const DESIRED = ["Restful","Reflective","Insightful","Empowering","Intriguing","Educational","Comedic","Silly","Inspiring","Arousing","Uplifting","Self-loving","Entrepreneurial"];
+/* ───────────────── Data ───────────────── */
+const MOOD_LEVELS = ["Low","Medium","High"];
 
-/* Book catalog. TIP: add image: 'https://...' to lock a cover. The card will auto-fetch if missing. */
+/* Categorized desired moods */
+const DESIRED_GROUPS = {
+  Calm: ["Restful","Peaceful","Comforted","Grounded","Chill","Cozy"],
+  Clarity: ["Reflective","Insightful","Mindful","Focused","Self-loving"],
+  Growth: ["Empowering","Uplifting","Inspiring","Resilient","Entrepreneurial"],
+  Energy: ["Curious","Playful","Comedic","Silly","Adventurous"],
+  Deep: ["Intriguing","Arousing","Transformational"]
+};
+
+/* Free-text mood keyword map → Low/Med/High */
+const MOOD_MAP = {
+  low:["sad","down","tired","drained","anxious","overwhelmed","lonely","stressed","meh","lost","empty"],
+  medium:["ok","fine","neutral","calm","grounded","chill","steady","bored"],
+  high:["happy","joyful","excited","energized","pumped","hyped","curious","inspired","motivated","confident"]
+};
+
+/* Book catalog (add image: 'https://...' to lock a cover) */
 const BOOKS = [
   {
     id:"rid",
@@ -188,7 +227,7 @@ const BOOKS = [
     gold:true,
     links:{buy:"#", site:"#"},
     tags:["Sci-Fi Comedy","Feel-good"]
-    // image: "https://m.media-amazon.com/images/I/xxxxx.jpg"
+    // image: "https://m.media-amazon.com/images/I/xxxx.jpg"
   },
   {
     id:"mag",
@@ -220,33 +259,55 @@ const BOOKS = [
   }
 ];
 
-/* -------------------- State -------------------- */
+/* ───────────────── State ───────────────── */
 const state = {
-  moodBefore: new Set(), desired: new Set(), moodAfter: new Set(),
+  moodLevel: new Set(), desired: new Set(), moodAfter: new Set(),
   pts: Number(localStorage.getItem("bh_pts")||0),
-  shelf: JSON.parse(localStorage.getItem("bh_shelf")||"[]"), // {id,title,author,image,status:'want'|'reading'|'read'}
-  reviews: JSON.parse(localStorage.getItem("bh_reviews")||"[]"), // {id, note, moodAfter}
-  order: [],
-  reflectingId: null,
+  shelf: JSON.parse(localStorage.getItem("bh_shelf")||"[]"), // {id,title,author,image,status}
+  reviews: JSON.parse(localStorage.getItem("bh_reviews")||"[]"), // {id, moodAfter, note, ts}
+  order: [], reflectingId: null,
+  desiredTab: "Calm",
   profile: JSON.parse(localStorage.getItem("bh_profile")||'{"isReader":true,"isAuthor":false}')
 };
 
-/* -------------------- Init -------------------- */
+/* ───────────────── Init ───────────────── */
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("pts").textContent = state.pts + " pts";
-  // Pills
-  renderPills("moodBefore", MOOD, state.moodBefore, refreshMatchesSingle);
-  renderPills("desiredMood", DESIRED, state.desired, refreshMatchesSingle);
-  renderPills("moodAfter", MOOD, state.moodAfter); // used only in reflection
+  // Feeling controls
+  renderPills("moodLevel", MOOD_LEVELS, state.moodLevel, refreshMatches);
+  renderPills("moodAfter", MOOD_LEVELS, state.moodAfter);
+  // Desired tabs + pills
+  renderDesiredTabs();
   // Profile toggles
   document.getElementById("isReader").checked = !!state.profile.isReader;
   document.getElementById("isAuthor").checked = !!state.profile.isAuthor;
-  // Prefetch/resolve covers, then show the first swipe
-  prefetchCovers().then(()=>{ refreshMatchesSingle(); show(0); });
+  // Covers, then show
+  prefetchCovers().then(()=>{ refreshMatches(); show(0); });
   renderShelf(); updateStats();
 });
 
-/* -------------------- UI helpers -------------------- */
+/* ───────────────── Feeling mapping ───────────────── */
+function mapFreeMood(){
+  const txt = (document.getElementById('feelText').value||"").toLowerCase().trim();
+  if(!txt) return;
+  const hit = (arr)=>arr.some(w=>txt.includes(w));
+  let level = "Medium";
+  if(hit(MOOD_MAP.high)) level="High";
+  else if(hit(MOOD_MAP.low)) level="Low";
+  setSingle("moodLevel", level);
+}
+function setSingle(containerId, value){
+  const box = document.getElementById(containerId);
+  const pills = [...box.querySelectorAll('.pill')];
+  pills.forEach(p=>p.classList.remove('on'));
+  const match = pills.find(p=>p.textContent===value);
+  if(match) match.classList.add('on');
+  const set = containerId==="moodLevel"?state.moodLevel:state.moodAfter;
+  set.clear(); set.add(value);
+  refreshMatches();
+}
+
+/* ───────────────── Rendering helpers ───────────────── */
 function renderPills(containerId, items, set, onChange){
   const box = document.getElementById(containerId); box.innerHTML = "";
   items.forEach(name => {
@@ -254,6 +315,8 @@ function renderPills(containerId, items, set, onChange){
     b.className = "pill"; b.textContent = name;
     if(set.has(name)) b.classList.add("on");
     b.addEventListener("click", () => {
+      const singleSet = (containerId==="moodLevel" || containerId==="moodAfter");
+      if(singleSet){ set.clear(); box.querySelectorAll('.pill').forEach(p=>p.classList.remove('on')); }
       if(set.has(name)){ set.delete(name); b.classList.remove("on"); }
       else { set.add(name); b.classList.add("on"); }
       if(onChange) onChange();
@@ -262,26 +325,46 @@ function renderPills(containerId, items, set, onChange){
   });
 }
 
-/* -------------------- Matching -------------------- */
+/* Desired mood categorized */
+function renderDesiredTabs(){
+  const t = document.getElementById('catTabs'); t.innerHTML="";
+  Object.keys(DESIRED_GROUPS).forEach(cat=>{
+    const b=document.createElement('button'); b.className='tabbtn'+(cat===state.desiredTab?' on':''); b.textContent=cat;
+    b.onclick=()=>{ state.desiredTab=cat; renderDesiredPills(); renderDesiredTabs(); };
+    t.appendChild(b);
+  });
+  renderDesiredPills();
+}
+function renderDesiredPills(){
+  const items = DESIRED_GROUPS[state.desiredTab]||[];
+  const box = document.getElementById('desiredPills'); box.innerHTML="";
+  items.forEach(name=>{
+    const b=document.createElement('button'); b.className='pill'; b.textContent=name;
+    if(state.desired.has(name)) b.classList.add('on');
+    b.onclick=()=>{ if(state.desired.has(name)){ state.desired.delete(name); b.classList.remove('on'); }
+                    else { state.desired.add(name); b.classList.add('on'); }
+                    refreshMatches(); };
+    box.appendChild(b);
+  });
+}
+
+/* ───────────────── Matching ───────────────── */
 function score(b){
-  // Desired mood vs vibes (1.4x), mood before vs vibes (0.5x), featured bonus
+  // Desired vs vibes (1.4x), mood level influence (High prefers “energizing” vibes loosely via count)
   const inter = (arr,set)=>arr.filter(x=>set.has(x)).length;
-  let s = inter(b.vibes||[], state.desired)*1.4 + inter(b.vibes||[], state.moodBefore)*0.5;
-  if(b.gold) s += 2.0;
+  let s = inter(b.vibes||[], state.desired)*1.4;
+  if(state.moodLevel.has("Low"))  s += (b.vibes||[]).includes("Comforted")?0.5:0;
+  if(state.moodLevel.has("High")) s += (b.vibes||[]).includes("Empowering")?0.5:0;
+  if(b.gold) s += 2;
   return s;
 }
-function refreshMatchesSingle(){
-  // Only consider books that have an image (no placeholder in rotation)
+function refreshMatches(){
   const withImg = BOOKS.filter(b=>b.image);
-  state.order = [...withImg].sort((a,b)=>score(b)-score(a));
-  if(!state.order.length){
-    // If none have a known image yet, show the highest while cover fetch happens.
-    state.order = [...BOOKS].sort((a,b)=>score(b)-score(a));
-  }
+  state.order = [...(withImg.length?withImg:BOOKS)].sort((a,b)=>score(b)-score(a));
   show(0);
 }
 
-/* -------------------- Swipe Card -------------------- */
+/* ───────────────── Swipe card ───────────────── */
 function show(idx){
   if(state.order.length===0){ document.getElementById("swipe").innerHTML='<div class="muted">No books yet.</div>'; return; }
   const b = state.order[idx%state.order.length];
@@ -323,14 +406,13 @@ function show(idx){
     <span class="badge-swipe nope">WANT</span>
   </div>`;
 
-  // Attach gesture to the new card
   addSwipe(document.getElementById('card'),
     ()=>decide('want', b.id),
     ()=>decide('reading', b.id)
   );
 }
 
-/* Swipe interactions */
+/* Gesture */
 function addSwipe(el, onLeft, onRight){
   let startX=0, dx=0, dragging=false, threshold=80;
   const like = el.querySelector('.badge-swipe.like');
@@ -359,7 +441,7 @@ function addSwipe(el, onLeft, onRight){
   el.addEventListener('pointercancel', onUp);
 }
 
-/* Decisions */
+/* Decisions & shelf */
 function decide(status, id){
   const book = BOOKS.find(x=>x.id===id); if(!book) return;
   if(!state.shelf.find(x=>x.id===id)){
@@ -370,7 +452,6 @@ function decide(status, id){
   persist('bh_shelf', state.shelf);
   renderShelf(); updateStats();
   addPts(status==='reading'?7:5);
-  // rotate to next
   const i = state.order.findIndex(x=>x.id===id);
   if(i>-1){ state.order.push(state.order.splice(i,1)[0]); }
   show(0);
@@ -378,14 +459,12 @@ function decide(status, id){
 
 function alreadyRead(id){
   const book = BOOKS.find(x=>x.id===id); if(!book) return;
-  // mark as read on shelf
   if(!state.shelf.find(x=>x.id===id)){
     state.shelf.unshift({id:book.id,title:book.title,author:book.author,image:book.image||null,status:'read'});
   }else{
     state.shelf = state.shelf.map(x=>x.id===id?{...x,status:'read'}:x);
   }
   persist('bh_shelf', state.shelf); renderShelf(); updateStats();
-  // open reflection UI
   state.reflectingId = id; state.moodAfter.clear();
   document.getElementById('reflectText').value = "";
   document.getElementById('reflectNote').textContent = "";
@@ -418,9 +497,7 @@ function renderShelf(){
       <div>
         <div style="font-weight:700">${escapeHtml(b.title)}</div>
         <div class="muted">by ${escapeHtml(b.author)}</div>
-        <div class="row" style="margin-top:6px">
-          <span class="stat ${b.status}">${b.status}</span>
-        </div>
+        <div class="row" style="margin-top:6px"><span class="stat ${b.status}">${b.status}</span></div>
       </div>
       <div class="row">
         ${b.status!=='read'?`<button class="btn gold" onclick="markRead('${b.id}')">Mark read</button>`:""}
@@ -458,10 +535,10 @@ function addPts(n){
   const top = document.getElementById("ptsTop"); if(top) top.textContent = state.pts + " pts";
 }
 
-/* Cover fetching (Google Books first, then Open Library if ISBN is present) */
+/* Cover fetching */
 async function prefetchCovers(){
   await Promise.all(BOOKS.map(async b=>{
-    if(b.image) return; // skip if provided
+    if(b.image) return;
     const url = await resolveCover(b);
     if(url) b.image = url;
   }));
@@ -476,7 +553,7 @@ async function resolveCover(book){
                || data?.items?.[0]?.volumeInfo?.imageLinks?.smallThumbnail;
       if(img) return img.replace('http://','https://');
     }
-  }catch(e){/* ignore */}
+  }catch(e){}
   if(book.isbn){
     const url = `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg`;
     try{ const head = await fetch(url,{method:'HEAD'}); if(head.ok) return url; }catch(e){}
