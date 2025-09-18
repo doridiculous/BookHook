@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>BookHook</title>
-
 <style>
 :root{
   --bg:#f7f7f8; --fg:#111; --muted:#6b7280;
@@ -17,36 +16,29 @@ body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 -apple-system,B
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0;box-shadow:0 1px 8px rgba(0,0,0,.03)}
 h1,h2{margin:0 0 10px}
 .muted{color:var(--muted);font-size:14px}
-.link{color:#0a66c2;text-decoration:none}
-.divider{height:1px;background:var(--line);margin:12px 0}
-
-/* top nav/status */
-.bar{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:3}
-.nav{display:flex;gap:8px;flex-wrap:wrap}
+.badge{padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:600;font-size:12px}
+.badge.gold{background:#fff7cc;border-color:#E7C200}
 .btn{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:600}
 .btn.small{font-size:12px;padding:6px 10px}
 .btn.gold{background:var(--gold);border-color:#caa900;color:#000}
-.badge{padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:600;font-size:12px}
-.badge.gold{background:#fff7cc;border-color:#E7C200}
 
-/* hero: original black logo + tagline */
-.hero{display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 12px}
+/* top bar */
+.bar{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:3}
+.nav{display:flex;gap:8px;flex-wrap:wrap}
+
+/* hero */
+.hero{display:flex;flex-direction:column;align-items:center;gap:8px;padding:22px 12px}
 .logo{height:56px}
-.logo-text{font-weight:800;letter-spacing:.2px}
-.tagline{color:var(--muted);font-weight:600;text-align:center}
+.logo-text{font-size:26px;font-weight:800}
+.tagline{color:var(--muted);font-weight:600}
 
 /* inputs */
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
-.lbl{min-width:120px;color:var(--muted)}
+.lbl{min-width:110px;color:var(--muted)}
 .pills{display:flex;flex-wrap:wrap;gap:8px}
 .pill{padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:var(--pill);cursor:pointer}
 .pill.on{background:#111;color:#fff;border-color:#111}
 .field{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;font:inherit}
-
-/* segmented control (feeling level) */
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
-.seg button{border:0;background:#fff;padding:8px 14px;cursor:pointer;font-weight:600}
-.seg button.on{background:#111;color:#fff}
 
 /* discover swipe card */
 .swipe{display:grid;grid-template-columns:210px 1fr;gap:16px}
@@ -55,13 +47,18 @@ h1,h2{margin:0 0 10px}
 .cover img{width:100%;height:100%;object-fit:cover;display:block}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;align-items:center}
 .chip{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fafafa;font-size:13px;display:inline-flex;white-space:nowrap}
-.hint{background:#fff7cc;border:1px solid #E7C200;padding:6px 10px;border-radius:999px;font-weight:600;font-size:12px}
+.chips .more{background:#f0f0f0}
 
 /* swipe gestures */
 .card-gesture{position:relative;touch-action:pan-y;user-select:none;will-change:transform}
 .badge-swipe{position:absolute;top:10px;padding:6px 10px;border-radius:8px;font-weight:700;border:2px solid;background:rgba(255,255,255,.9);opacity:0;transition:opacity .15s}
 .badge-swipe.like{left:10px;color:#0a6a0a;border-color:#0a6a0a}
 .badge-swipe.nope{right:10px;color:#cc1b1b;border-color:#cc1b1b}
+
+/* tabs for Desired Mood categories */
+.tabbar{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.tab{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:600;font-size:12px;cursor:pointer}
+.tab.on{background:#000;color:#fff;border-color:#000}
 
 /* shelf tiles (profile) */
 .list{display:flex;flex-direction:column;gap:10px}
@@ -72,468 +69,459 @@ h1,h2{margin:0 0 10px}
 .stat.want{background:#eef3ff;border-color:#cfe1ff}
 .stat.reading{background:#eaf8ed;border-color:#b8e4c3}
 .stat.read{background:#fff0d2;border-color:#f7dc8a}
-
-/* HOTFIX to guarantee horizontal chips even if <br> sneaks in */
-.chips br{display:none !important;}
 </style>
 </head>
-
 <body>
-  <!-- top bar -->
-  <header class="bar">
-    <div class="nav">
-      <button class="btn small" onclick="showSection('discover')">Discover</button>
-      <button class="btn small" onclick="showSection('hookmarks')">HookMarks</button>
-      <button class="btn small" onclick="showSection('profile')">My Profile</button>
-      <button class="btn small" onclick="showSection('boards')">Leaderboards</button>
-    </div>
-    <div class="status"><span class="badge">Bronze</span><span id="pts" class="badge gold">0 pts</span></div>
-  </header>
+<header class="bar">
+  <div class="nav">
+    <button class="btn small" onclick="showSection('discover')">Discover</button>
+    <button class="btn small" onclick="showSection('hookmarks')">HookMarks</button>
+    <button class="btn small" onclick="showSection('profile')">My Profile</button>
+    <button class="btn small" onclick="showSection('boards')">Leaderboards</button>
+  </div>
+  <div class="status"><span class="badge">Bronze</span> <span id="pts" class="badge gold">0 pts</span></div>
+</header>
 
-  <main class="wrap">
-    <!-- HERO: SVG black logo + rotating tagline -->
-    <section class="hero">
-      <!-- Original black logo (rounded square + white “hook hole”). No upload needed. -->
-      <!-- BookHook: simple black book mark -->
-<svg class="logo" viewBox="0 0 64 64" width="56" height="56" aria-label="BookHook">
-  <!-- book body -->
-  <rect x="8" y="8" width="48" height="48" rx="8" fill="#000"/>
-  <!-- page edge (white strip on the right) -->
-  <rect x="46" y="14" width="6" height="36" rx="2" fill="#fff"/>
-  <!-- dog-ear / page fold -->
-  <path d="M52 14 L52 24 L46 20 Z" fill="#fff"/>
-</svg>
-      <div class="logo-text">BookHook</div>
-      <div id="rotTag" class="tagline">Match readers ↔ authors by vibe</div>
+<main class="wrap">
+
+  <!-- HERO -->
+  <section class="hero">
+    <!-- Black book logo (no upload) -->
+    <svg class="logo" viewBox="0 0 64 64" width="56" height="56" aria-label="BookHook">
+      <rect x="8" y="8" width="48" height="48" rx="8" fill="#000"/>
+      <rect x="46" y="14" width="6" height="36" rx="2" fill="#fff"/>
+      <path d="M52 14 L52 24 L46 20 Z" fill="#fff"/>
+    </svg>
+    <div class="logo-text">BookHook</div>
+    <div id="rotTag" class="tagline">Swipe books by how you want to feel</div>
+  </section>
+
+  <!-- DISCOVER (home) -->
+  <section id="discover" class="page">
+
+    <!-- How I’m feeling -->
+    <section class="card">
+      <h2>How I’m feeling</h2>
+      <div class="row">
+        <input id="moodFree" class="field" placeholder="I am feeling … (tired, anxious, pumped…)" />
+        <button id="setMoodFree" class="btn small">Set</button>
+      </div>
+      <div class="row">
+        <span class="lbl">Level:</span>
+        <button class="btn small" data-level="Low">Low</button>
+        <button class="btn small" data-level="Medium">Medium</button>
+        <button class="btn small" data-level="High">High</button>
+      </div>
+      <div class="muted">Type anything (“overwhelmed”, “hyped”) or tap a level. This nudges your matches.</div>
     </section>
 
-    <!-- ===== HOME/Discover page ===== -->
-    <section id="discover" class="page">
-      <!-- How I'm feeling -->
-      <section class="card">
-        <h2>How I’m feeling</h2>
-        <div class="row">
-          <input id="moodFree" class="field" placeholder="I am feeling … (tired, anxious, pumped…)" />
-          <button id="setMoodFree" class="btn small">Set</button>
-        </div>
-        <div class="row">
-          <span class="lbl">Level:</span>
-          <div class="seg" id="segLevel">
-            <button data-level="Low">Low</button>
-            <button data-level="Medium">Medium</button>
-            <button data-level="High">High</button>
-          </div>
-        </div>
-        <div class="muted">Type anything (“overwhelmed”, “hyped”) or tap a level. This nudges your matches.</div>
-      </section>
-
-      <!-- Desired Mood (categorised) -->
-      <section class="card">
-        <h2>Desired Mood</h2>
-        <div class="row" id="desiredTabs"></div>
-        <div id="desiredPills" class="pills"></div>
-        <div class="muted">Choose a few — these steer the match score below.</div>
-      </section>
-
-      <!-- Discover & Swipe -->
-      <section class="card">
-        <h2>Discover</h2>
-        <div class="muted" style="margin-bottom:6px">Dream Big · Do Ridiculous · Achieve Remarkable</div>
-        <div class="row" style="margin-bottom:8px">
-          <span class="hint">Swipe left: Want</span>
-          <span class="hint">Swipe right: Reading</span>
-          <span class="hint">Tap “Already read” to add HookMarks</span>
-          <a class="link" style="margin-left:auto" href="#hookmarks" onclick="showSection('hookmarks')">See HookMarks →</a>
-        </div>
-        <div id="swipe" class="swipe"></div>
-      </section>
-
-      <!-- Mini shelf pointer -->
-      <section class="card">
-        <h2>Your Shelf</h2>
-        <div class="muted">Save or swipe to add books. Full list is in <a class="link" href="#profile" onclick="showSection('profile')">My Profile</a>.</div>
-      </section>
+    <!-- Desired Mood (categorized, tidy) -->
+    <section class="card">
+      <h2>Desired Mood</h2>
+      <div class="tabbar" id="dmTabs"></div>
+      <div id="dmPills" class="pills"></div>
+      <div class="muted">Choose a few — these steer the match score below.</div>
     </section>
 
-    <!-- ===== HookMarks page ===== -->
-    <section id="hookmarks" class="page" style="display:none">
-      <h2>HookMarks</h2>
-      <div class="muted">Your aha’s, LOLs, mood shifts — all linked to books.</div>
-      <div class="divider"></div>
-      <div id="hookList" class="list muted">No HookMarks yet. Mark a book “Already read” and add one!</div>
+    <!-- Swipe area -->
+    <section class="card">
+      <h2>Discover</h2>
+      <div class="muted">Swipe left: Want &nbsp;•&nbsp; Swipe right: Reading &nbsp;•&nbsp; Tap “Already read” to add HookMarks</div>
+      <div id="swipe" class="swipe"></div>
     </section>
 
-    <!-- ===== Profile page ===== -->
-    <section id="profile" class="page" style="display:none">
+    <!-- Shelf preview -->
+    <section class="card" id="shelfSection">
+      <h2>Your Shelf</h2>
+      <div class="muted">Save or swipe to add books. Full list is in <a href="#profile" onclick="showSection('profile')">My Profile</a>.</div>
+    </section>
+  </section>
+
+  <!-- PROFILE (full shelf + stats) -->
+  <section id="profile" class="page" style="display:none">
+    <section class="card">
       <h2>My Profile</h2>
       <div class="row">
-        <label class="pill"><input type="checkbox" id="isReader" checked /> Reader</label>
-        <label class="pill"><input type="checkbox" id="isAuthor" /> Author</label>
+        <span class="lbl">Role:</span> <span id="profileRole">Reader</span>
       </div>
       <div class="row">
-        <div class="badge">Role: <span id="profileRole">Reader</span></div>
-        <div class="badge">Points: <span id="profilePts">0</span></div>
-        <div class="badge">HookMarks: <span id="profileHooks">0</span></div>
+        <span class="lbl">Points:</span> <span id="profilePts">0</span>
       </div>
-
-      <section class="card">
-        <h3>Your Bookshelf</h3>
-        <div id="shelf" class="list muted">Save a book to see it here.</div>
-      </section>
+      <div class="row">
+        <span class="lbl">HookMarks:</span> <span id="profileHooks">0</span>
+      </div>
     </section>
 
-    <!-- ===== Leaderboards page ===== -->
-    <section id="boards" class="page" style="display:none">
+    <section class="card">
+      <h3>Your Bookshelf</h3>
+      <div id="shelf" class="list"></div>
+    </section>
+  </section>
+
+  <!-- HOOKMARKS -->
+  <section id="hookmarks" class="page" style="display:none">
+    <section class="card">
+      <h2>HookMarks</h2>
+      <div class="muted">Your reflections (AHAs, LOLs, mood shifts). Added when you mark a book “Already read”.</div>
+      <div id="hooksList" class="list"></div>
+    </section>
+  </section>
+
+  <!-- LEADERBOARDS -->
+  <section id="boards" class="page" style="display:none">
+    <section class="card">
       <h2>Leaderboards</h2>
-      <section class="card">
-        <h3>Top Authors (spark impact)</h3>
-        <div id="authBoard" class="list muted">No activity yet.</div>
-      </section>
-      <section class="card">
-        <h3>Top Readers (sharing)</h3>
-        <div id="readBoard" class="list muted">No activity yet.</div>
-      </section>
+      <div class="row"><b>Authors sparking most HookMarks</b></div>
+      <div id="authLB" class="list"></div>
+      <div class="row" style="margin-top:12px"><b>Readers sharing most HookMarks</b></div>
+      <div id="readLB" class="list"></div>
     </section>
-  </main>
+  </section>
+
+</main>
 
 <script>
-/* ========= Rotating tagline ========= */
-const TAGLINES = [
-  "Match readers ↔ authors by vibe",
-  "Swipe books by how you want to feel",
-  "Dream Big · Do Ridiculous · Achieve Remarkable",
-  "Find books that boost your mood",
-  "Save, read, reflect — earn points"
-];
-(function rotateTag(){
-  const el = document.getElementById('rotTag');
-  let i = 0;
-  setInterval(()=>{ i=(i+1)%TAGLINES.length; el.textContent = TAGLINES[i]; }, 4000);
-})();
+/* -------------------- DATA -------------------- */
 
-/* ========= Desired Mood (categorised) ========= */
-const DESIRED_CATS = [
-  {name:"Calm", items:["Restful","Reflective","Cozy","Grounding"]},
-  {name:"Grow", items:["Insightful","Empowering","Educational","Entrepreneurial"]},
-  {name:"Feel-good", items:["Uplifting","Self-loving","Inspiring"]},
-  {name:"Fun", items:["Comedic","Silly","Playful"]},
-  {name:"Deep", items:["Intriguing","Arousing"]}
+/* Desired Mood categories (tidy) */
+const DM_CATEGORIES = [
+  {name:'Calm', items:['Restful','Reflective','Soothing','Grounding','Peaceful']},
+  {name:'Clarity', items:['Insightful','Educational','Practical','Mindset-shifting']},
+  {name:'Drive', items:['Empowering','Uplifting','Inspiring','Entrepreneurial']},
+  {name:'Spark', items:['Intriguing','Playful','Comedic','Silly','Arousing']},
 ];
 
-/* ========= Free-text mood mapper ========= */
-const MOOD_MAP = {
-  low:["sad","down","tired","drained","anxious","overwhelmed","lonely","stressed","meh"],
-  medium:["ok","fine","neutral","calm","grounded","chill","steady"],
-  high:["happy","joyful","excited","energized","pumped","hyped","curious","inspired","motivated"]
-};
-function mapFreeMood(text){
-  const t = (text||"").toLowerCase().trim();
-  if(!t) return;
-  const hit = (arr)=>arr.some(w=>t.includes(w));
-  if(hit(MOOD_MAP.high)) setSingle("moodLevel","High");
-  else if(hit(MOOD_MAP.low)) setSingle("moodLevel","Low");
-  else setSingle("moodLevel","Medium");
-}
-
-/* ========= Seed books ========= */
 const BOOKS = [
   {
-    id:"rid",
-    title:"The Ridiculous: Book 1",
-    author:"Jef & Mindy",
-    vibes:["Funny","Satirical","Empowering","Chill","Feel-good"],
-    facts:{pace:"Medium", pages:312, year:2024},
-    gold:true, links:{site:"#",buy:"#"}
+    id:'rid',
+    title:'The Ridiculous: Book 1',
+    author:'Jef & Mindy',
+    vibes:['Funny','Satirical','Empowering','Chill'],
+    facts:{pace:'Medium', pages:312, year:2024},
+    gold:true,
+    tags:['Sci-Fi Comedy','Feel-good'],
+    links:{site:'#', buy:'#'}
   },
   {
-    id:"mag",
-    title:"Magical Adventures of Lori & Bonnie B. Bunny",
-    author:"Elaine Blackstien",
-    vibes:["Inspiring","Playful","Comedic","Uplifting"],
-    facts:{pace:"Fast", pages:248, year:2025},
-    links:{buy:"#"}
+    id:'mab',
+    title:'Magical Adventures of Lori & Bonnie B. Bunny',
+    author:'Elaine Blackstien',
+    vibes:['Inspiring','Playful','Comedic','Uplifting'],
+    facts:{pace:'Fast', pages:248, year:2025},
+    gold:true,
+    tags:['Adventure','Heart'],
+    links:{buy:'#',site:'#'}
   },
   {
-    id:"hab",
-    title:"Atomic Habits of the Heart",
-    author:"A. North",
-    vibes:["Focused","Grounded","Practical","Motivated","Calm"],
-    facts:{pace:"Fast", pages:280, year:2019},
-    links:{buy:"#"}, tags:["Tiny steps","Habit loop"]
+    id:'hab',
+    title:'Atomic Habits of the Heart',
+    author:'A. North',
+    vibes:['Focused','Grounded','Practical','Motivated','Calm'],
+    facts:{pace:'Fast', pages:280, year:2019},
+    tags:['Tiny steps','Habit loop'],
+    links:{buy:'#'}
   },
   {
-    id:"coz",
-    title:"Star Soup & Cozy Skies",
-    author:"L. Nova",
-    vibes:["Calm","Cozy","Comforted","Reflective"],
-    facts:{pace:"Slow", pages:220, year:2021},
-    links:{buy:"#"}, tags:["Soothing","Night read"]
+    id:'coz',
+    title:'Star Soup & Cozy Skies',
+    author:'L. Nova',
+    vibes:['Calm','Cozy','Comforted','Reflective'],
+    facts:{pace:'Slow', pages:220, year:2021},
+    tags:['Night read','Soothing'],
+    links:{buy:'#'}
   }
 ];
 
-/* ========= App state ========= */
+/* -------------------- STATE -------------------- */
 const state = {
-  profile:{isReader:true,isAuthor:false},
-  moodLevel:"Medium",
-  desired:new Set(),
-  pts:Number(localStorage.getItem("bh_pts")||0),
-  shelf:JSON.parse(localStorage.getItem("bh_shelf")||"[]"), // {id,title,author,image,status}
-  hookmarks:JSON.parse(localStorage.getItem("bh_hooks")||"[]"), // {bookId, note, aha, lol, before, after, ts}
-  order:[]
+  moodLevel: 'Medium',
+  desired: new Set(),
+  order: [],
+  pts: Number(localStorage.getItem('bh_pts')||0),
+  shelf: JSON.parse(localStorage.getItem('bh_shelf')||'[]'), // {id,title,author,image,status}
+  hooks: JSON.parse(localStorage.getItem('bh_hooks')||'[]'), // {id,title,author,aha,lol,shift}
 };
+document.addEventListener('DOMContentLoaded', init);
 
-/* ========= Init ========= */
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("pts").textContent = state.pts+" pts";
-  renderDesiredTabs(); renderDesiredPills();
-  wireMoodControls();
-  refreshMatches(); show(0);
-  renderShelf(); renderHookMarks(); updateStats();
-  // profile toggles
-  document.getElementById('isReader').onchange = e=>{state.profile.isReader=e.target.checked;updateStats();}
-  document.getElementById('isAuthor').onchange = e=>{state.profile.isAuthor=e.target.checked;updateStats();}
-});
+/* -------------------- INIT -------------------- */
+function init(){
+  // status
+  document.getElementById('pts').textContent = state.pts+' pts';
 
-/* ========= Sections ========= */
-function showSection(id){
-  for(const el of document.querySelectorAll(".page")) el.style.display="none";
-  document.getElementById(id).style.display="";
-  if(id==="profile"){ renderShelf(); }
-  if(id==="hookmarks"){ renderHookMarks(); }
+  // Desired Mood tabs & chips
+  renderDmTabs();
+  renderDmPills(DM_CATEGORIES[0].items);
+
+  // Feelings input
+  document.getElementById('setMoodFree').onclick = () => mapFreeMood(
+    document.getElementById('moodFree').value
+  );
+  document.querySelectorAll('[data-level]').forEach(b=>{
+    b.onclick = ()=>{ state.moodLevel = b.dataset.level; refreshMatches(); };
+  });
+
+  // shelves & lists
+  renderShelf();
+  renderHookMarks();
+  rebuildLeaderboards();
+
+  refreshMatches(); // sets state.order
+  show(0);          // first card
 }
-function updateStats(){
-  document.getElementById("profileRole").textContent = [
-    state.profile.isReader?"Reader":null,
-    state.profile.isAuthor?"Author":null
-  ].filter(Boolean).join(" & ") || "Guest";
-  document.getElementById("profilePts").textContent = state.pts;
-  document.getElementById("profileHooks").textContent = state.hookmarks.length;
-}
 
-/* ========= Desired Mood UI ========= */
-function renderDesiredTabs(){
-  const box = document.getElementById("desiredTabs"); box.innerHTML="";
-  DESIRED_CATS.forEach(cat=>{
-    const b=document.createElement("button"); b.className="btn small"; b.textContent=cat.name;
-    b.onclick=()=>document.getElementById('desiredPills')?.scrollIntoView({behavior:'smooth'});
-    box.appendChild(b);
+/* -------------------- DESIRED MOOD UI -------------------- */
+function renderDmTabs(){
+  const box = document.getElementById('dmTabs');
+  box.innerHTML = DM_CATEGORIES.map((c,i)=>
+    `<button class="tab ${i===0?'on':''}" onclick="renderDmPills(DM_CATEGORIES[${i}].items,this)">${c.name}</button>`
+  ).join('');
+}
+function renderDmPills(items, tabBtn){
+  if(tabBtn){
+    document.querySelectorAll('#dmTabs .tab').forEach(t=>t.classList.remove('on'));
+    tabBtn.classList.add('on');
+  }
+  const c = document.getElementById('dmPills');
+  c.innerHTML = '';
+  items.forEach(name=>{
+    const b = document.createElement('button');
+    b.className = 'pill'; b.textContent = name;
+    if(state.desired.has(name)) b.classList.add('on');
+    b.onclick = ()=>{
+      if(state.desired.has(name)){ state.desired.delete(name); b.classList.remove('on'); }
+      else{ state.desired.add(name); b.classList.add('on'); }
+      refreshMatches();
+    };
+    c.appendChild(b);
   });
 }
-function renderDesiredPills(){
-  const box = document.getElementById("desiredPills"); box.innerHTML="";
-  DESIRED_CATS.forEach(cat=>{
-    const h=document.createElement("div"); h.className="lbl"; h.textContent=cat.name; box.appendChild(h);
-    cat.items.forEach(name=>{
-      const p=document.createElement("button"); p.className="pill"; p.textContent=name;
-      p.onclick=()=>{ if(state.desired.has(name)){state.desired.delete(name);p.classList.remove("on");}
-                      else{state.desired.add(name);p.classList.add("on");}
-                      refreshMatches(); };
-      box.appendChild(p);
-    });
-  });
-}
 
-/* ========= Mood controls ========= */
-function wireMoodControls(){
-  document.querySelectorAll('#segLevel [data-level]').forEach(el=>{
-    el.onclick=()=> setSingle("moodLevel", el.getAttribute('data-level'));
-  });
-  setSingle("moodLevel","Medium"); // default
-  document.getElementById('setMoodFree').onclick = ()=> mapFreeMood(document.getElementById('moodFree').value);
-}
-function setSingle(key,value){
-  state[key]=value;
-  document.querySelectorAll('#segLevel [data-level]').forEach(b=>b.classList.toggle('on', b.getAttribute('data-level')===value));
+/* Map free-text mood to a level */
+function mapFreeMood(text){
+  const t = (text||'').toLowerCase().trim();
+  if(!t) return;
+  const low  = ['sad','down','tired','drained','anxious','overwhelmed','lonely','stressed','meh'];
+  const high = ['happy','joyful','excited','energized','pumped','hyped','curious','inspired','motivated'];
+  const hit = (arr)=>arr.some(w=>t.includes(w));
+  state.moodLevel = hit(high) ? 'High' : hit(low) ? 'Low' : 'Medium';
   refreshMatches();
 }
 
-/* ========= Matching ========= */
+/* -------------------- MATCHING -------------------- */
 function score(b){
-  const inter=(arr,set)=> (arr||[]).filter(x=>set.has(x)).length;
-  let s = inter(b.vibes,state.desired)*1.3;
-  if(state.moodLevel==="High" && (b.vibes||[]).includes("Uplifting")) s+=0.4;
-  if(state.moodLevel==="Low"  && (b.vibes||[]).includes("Comforted")) s+=0.4;
+  // Desired mood vs book vibes (heavy)
+  const inter = (arr,set)=>arr.filter(x=>set.has(x)).length;
+  let s = inter(b.vibes||[], state.desired)*1.4;
+  // Mood level gentle nudge
+  if(state.moodLevel==='Low' && (b.vibes||[]).includes('Comforted')) s+=0.3;
+  if(state.moodLevel==='High'&& (b.vibes||[]).includes('Focused'))   s+=0.3;
   if(b.gold) s+=2.0;
   return s;
 }
-function refreshMatches(){ state.order = [...BOOKS].sort((a,b)=>score(b)-score(a)); }
+function refreshMatches(){
+  state.order = [...BOOKS].sort((a,b)=>score(b)-score(a));
+}
 
-/* ========= Swipe card rendering ========= */
+/* -------------------- SWIPE CARD -------------------- */
 function show(idx){
-  if(!state.order.length){ document.getElementById("swipe").innerHTML='<div class="muted">No books yet.</div>'; return; }
+  if(!state.order.length){ document.getElementById('swipe').innerHTML='<div class="muted">No books yet.</div>'; return; }
   const b = state.order[idx%state.order.length];
-  const el = document.getElementById("swipe");
-  const chips = [
+  const el = document.getElementById('swipe');
+
+  const pills = [
     ...(b.vibes||[]),
-    b.facts?.pace, b.facts?.pages?`${b.facts.pages}p`:null, b.facts?.year?`Since ${b.facts.year}`:null,
+    b.facts?.pace,
+    b.facts?.pages?`${b.facts.pages}p`:null,
+    b.facts?.year?`Since ${b.facts.year}`:null,
     ...(b.tags||[])
   ].filter(Boolean);
 
-  const coverHTML = b.image
-    ? `<div class="cover"><img src="${b.image}" alt="Cover of ${escapeHtml(b.title)}"></div>`
-    : `<div class="cover" aria-hidden="true">${escapeHtml(b.title.slice(0,1))}</div>`;
+  const cover = b.image
+    ? `<div class="cover"><img src="${b.image}" alt="Cover of ${esc(b.title)}"></div>`
+    : `<div class="cover" aria-hidden="true">${b.title.slice(0,1)}</div>`;
 
   el.innerHTML = `
-    <div id="swCard" class="card-gesture swipe">
-      ${coverHTML}
+    <div id="card" class="card-gesture swipe">
+      ${cover}
       <div>
-        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:4px">
-          <div>${b.gold?'<span class="badge">Featured</span>':''}</div>
-          <div class="badge gold" id="ptsTop">${state.pts} pts</div>
+        <div class="row" style="justify-content:space-between;align-items:center">
+          ${b.gold?'<span class="badge gold">Featured</span>':''}
+          <span class="badge gold" id="ptsTop">${state.pts} pts</span>
         </div>
-        <h2 style="margin:6px 0 4px">${escapeHtml(b.title)}</h2>
-        <div class="muted">by ${escapeHtml(b.author)}</div>
-        <div class="chips">${chips.map(c=>`<span class="chip">${escapeHtml(c)}</span>`).join('')}</div>
+        <h2 style="margin:6px 0 4px">${esc(b.title)}</h2>
+        <div class="muted">by ${esc(b.author)}</div>
+        <div class="chips">${pills.map((c,i)=> i<7 ? `<span class="chip">${esc(c)}</span>` : '').join('')}
+          ${pills.length>7?`<span class="chip more">+${pills.length-7} more</span>`:''}
+        </div>
         <div class="row" style="margin-top:10px">
-          <button class="btn" onclick="markWant('${b.id}')">Want (+5)</button>
-          <button class="btn gold" onclick="markReading('${b.id}')">Reading (+7)</button>
+          <button class="btn" onclick="mark('${b.id}','want')">Want (+5)</button>
+          <button class="btn gold" onclick="mark('${b.id}','reading')">Reading (+7)</button>
           <button class="btn" onclick="markRead('${b.id}')">Already read</button>
         </div>
-        <div class="divider"></div>
-        <div class="muted">Author · ${escapeHtml(b.author)}
-          ${b.links?.site?` · <a class="link" href="${b.links.site}">Website</a>`:''}
-          ${b.links?.buy?` · <a class="link" href="${b.links.buy}">Buy</a>`:''}
+        <div class="muted" style="margin-top:10px">Swipe: left = Want • right = Reading</div>
+        <div class="row" style="gap:8px;margin-top:10px">
+          ${b.links?.site?`<a class="btn small" href="${b.links.site}">Website</a>`:''}
+          ${b.links?.buy?`<a class="btn small gold" href="${b.links.buy}">Buy</a>`:''}
         </div>
-        <span class="badge-swipe like">SAVE</span>
-        <span class="badge-swipe nope">NOPE</span>
       </div>
+      <span class="badge-swipe like">SAVE</span>
+      <span class="badge-swipe nope">NOPE</span>
     </div>
   `;
 
-  // swipe gestures
-  const card = document.getElementById('swCard');
-  addSwipe(card, ()=>markWant(b.id,true), ()=>markReading(b.id,true));
+  // fetch cover if missing
+  if(!b.image && !b._coverRequested){ b._coverRequested = true; resolveCover(b).then(url=>{
+    if(url){ b.image=url; const c = el.querySelector('.cover'); if(c) c.innerHTML=`<img src="${url}" alt="Cover of ${esc(b.title)}">`; }
+  });}
 
-  // auto-fetch cover once
-  if(!b.image && !b._coverRequested){
-    b._coverRequested = true;
-    resolveCover(b).then(url=>{
-      if(url){
-        b.image = url;
-        const c = el.querySelector(".cover");
-        if(c) c.innerHTML = `<img src="${url}" alt="Cover of ${escapeHtml(b.title)}">`;
-      }
-    });
-  }
+  // enable swipe
+  addSwipe(document.getElementById('card'), ()=>mark(b.id,'want'), ()=>mark(b.id,'reading'));
 }
+
+/* Swipe interactions */
 function addSwipe(el, onLeft, onRight){
-  let startX=0, dx=0, drag=false;
-  const th=80, like=el.querySelector('.badge-swipe.like'), nope=el.querySelector('.badge-swipe.nope');
-  const d=(e)=> e.touches?e.touches[0].clientX:e.clientX;
-  el.addEventListener('pointerdown',e=>{drag=true;startX=d(e);el.style.transition='';});
-  el.addEventListener('pointermove',e=>{
-    if(!drag) return; dx=d(e)-startX; const rot=dx/12;
-    el.style.transform=`translateX(${dx}px) rotate(${rot}deg)`;
-    const a=Math.min(1,Math.abs(dx)/120);
-    if(dx>0){like.style.opacity=a;nope.style.opacity=0;} else {nope.style.opacity=a;like.style.opacity=0;}
-  });
-  const reset=()=>{el.style.transition='transform .2s'; el.style.transform='translateX(0) rotate(0)'; like.style.opacity=0; nope.style.opacity=0;};
-  el.addEventListener('pointerup',()=>{
+  let startX=0, dx=0, drag=false; const thr=80;
+  const like=el.querySelector('.badge-swipe.like'); const nope=el.querySelector('.badge-swipe.nope');
+  const down=e=>{drag=true; startX=(e.touches?e.touches[0].clientX:e.clientX); el.style.transition='';};
+  const move=e=>{
+    if(!drag) return;
+    const x=(e.touches?e.touches[0].clientX:e.clientX);
+    dx=x-startX; el.style.transform=`translateX(${dx}px) rotate(${dx/14}deg)`;
+    const a=Math.min(1,Math.abs(dx)/120); if(dx>0){like.style.opacity=a; nope.style.opacity=0;} else {nope.style.opacity=a; like.style.opacity=0;}
+  };
+  const up=()=>{
     if(!drag) return; drag=false;
-    if(dx>th){el.style.transition='transform .2s';el.style.transform='translateX(500px) rotate(15deg)'; setTimeout(()=>onRight(),160);}
-    else if(dx<-th){el.style.transition='transform .2s';el.style.transform='translateX(-500px) rotate(-15deg)'; setTimeout(()=>onLeft(),160);}
-    else reset();
-  });
-  el.addEventListener('pointercancel',()=>{drag=false;reset();});
+    if(dx>thr){ el.style.transition='transform .2s'; el.style.transform='translateX(500px) rotate(15deg)'; setTimeout(onRight,160);}
+    else if(dx<-thr){ el.style.transition='transform .2s'; el.style.transform='translateX(-500px) rotate(-15deg)'; setTimeout(onLeft,160);}
+    else{ el.style.transition='transform .2s'; el.style.transform='translateX(0)'; like.style.opacity=0; nope.style.opacity=0; }
+  };
+  el.addEventListener('pointerdown',down);
+  el.addEventListener('pointermove',move);
+  el.addEventListener('pointerup',up);
+  el.addEventListener('pointercancel',up);
 }
 
-/* ========= Actions / Shelf ========= */
-function markWant(id, fromSwipe=false){ upsertShelf(id,'want'); addPts(5); if(fromSwipe) next(); }
-function markReading(id, fromSwipe=false){ upsertShelf(id,'reading'); addPts(7); if(fromSwipe) next(); }
-function markRead(id){
-  upsertShelf(id,'read');
-  // quick HookMark capture
-  const before = state.moodLevel;
-  const note = prompt("Your big takeaway / LOL / aha? (optional)", "");
-  const after = prompt("Mood after finishing? (Low / Medium / High)", "High");
-  state.hookmarks.unshift({bookId:id, note:note||"", aha:note?1:0, lol:note?.toLowerCase().includes("lol")?1:0, before, after, ts:Date.now()});
-  persist('bh_hooks', state.hookmarks); renderHookMarks(); addPts(10); next();
-}
-function upsertShelf(id,status){
+/* -------------------- ACTIONS -------------------- */
+function mark(id,status){ // want / reading
   const b = BOOKS.find(x=>x.id===id); if(!b) return;
-  const item = {id:b.id,title:b.title,author:b.author,image:b.image||"",status};
-  const i = state.shelf.findIndex(x=>x.id===id);
-  if(i>=0) state.shelf[i]=item; else state.shelf.unshift(item);
-  persist('bh_shelf', state.shelf); renderShelf();
+  if(!state.shelf.find(x=>x.id===id)){
+    state.shelf.unshift({id:b.id,title:b.title,author:b.author,image:b.image||null,status});
+  }else{
+    state.shelf = state.shelf.map(x=>x.id===id? {...x,status}:x);
+  }
+  persist('bh_shelf',state.shelf); renderShelf(); addPts(status==='want'?5:7); next();
+}
+function markRead(id){
+  const b = BOOKS.find(x=>x.id===id); if(!b) return;
+  // prompt for HookMarks
+  const aha = prompt('Big takeaway (AHA)?')||'';
+  const lol = prompt('Any LOL moment?')||'';
+  const shift = prompt('Mood shift (before → after)?')||'';
+  state.hooks.unshift({id:b.id,title:b.title,author:b.author,aha,lol,shift, ts:Date.now()});
+  persist('bh_hooks',state.hooks);
+  // move to read on shelf
+  if(!state.shelf.find(x=>x.id===id)){
+    state.shelf.unshift({id:b.id,title:b.title,author:b.author,image:b.image||null,status:'read'});
+  }else{
+    state.shelf = state.shelf.map(x=>x.id===id? {...x,status:'read'}:x);
+  }
+  persist('bh_shelf',state.shelf); renderShelf(); renderHookMarks(); rebuildLeaderboards(); addPts(12); next();
 }
 function next(){ state.order.push(state.order.shift()); show(0); }
+
+/* -------------------- RENDER LISTS -------------------- */
 function renderShelf(){
-  const box = document.getElementById("shelf");
-  if(!box) return;
-  if(!state.shelf.length){ box.classList.add("muted"); box.textContent="Save a book to see it here."; return; }
-  box.classList.remove("muted");
-  box.innerHTML = state.shelf.map(s=>`
+  const box = document.getElementById('shelf'); const small = document.getElementById('shelfSection');
+  const list = state.shelf.map(x=>`
     <div class="tile">
-      <div class="thumb">${s.image?`<img src="${s.image}" alt="">`:""}</div>
-      <div><b>${escapeHtml(s.title)}</b><br><span class="muted">by ${escapeHtml(s.author)}</span></div>
-      <div class="stat ${s.status}">${s.status}</div>
-    </div>
-  `).join("");
-}
-
-/* ========= HookMarks + Boards ========= */
-function renderHookMarks(){
-  const box = document.getElementById("hookList"); if(!box) return;
-  if(!state.hookmarks.length){ box.classList.add("muted"); box.textContent="No HookMarks yet. Mark a book “Already read” and add one!"; return; }
-  box.classList.remove("muted");
-  const rows = state.hookmarks.map(h=>{
-    const b = BOOKS.find(x=>x.id===h.bookId);
-    return `<div class="tile">
-      <div class="thumb">${b?.image?`<img src="${b.image}" alt="">`:""}</div>
-      <div><b>${escapeHtml(b?.title||"Unknown")}</b><br>
-      <span class="muted">${new Date(h.ts).toLocaleDateString()}</span><br>
-      ${h.note?escapeHtml(h.note):"<span class='muted'>No note</span>"}<br>
-      <span class="stat">Before: ${escapeHtml(h.before||"-")}</span>
-      <span class="stat">After: ${escapeHtml(h.after||"-")}</span>
+      <div class="thumb">${x.image?`<img src="${x.image}" alt="">`:' '}</div>
+      <div>
+        <div><b>${esc(x.title)}</b></div>
+        <div class="muted">by ${esc(x.author)}</div>
       </div>
-      <div class="stat read">HookMark</div>
-    </div>`;
-  }).join("");
-  box.innerHTML = rows;
-
-  // tiny boards (counts by author)
-  const impact = {};
-  state.hookmarks.forEach(h=>{
-    const b = BOOKS.find(x=>x.id===h.bookId); if(!b) return;
-    const a = b.author; impact[a] = (impact[a]||0)+1;
-  });
-  const authList = Object.entries(impact).sort((a,b)=>b[1]-a[1]).map(([a,n])=>`
+      <div class="stat ${x.status||'want'}">${x.status||'want'}</div>
+    </div>`).join('');
+  if(box) box.innerHTML = list || '<div class="muted">Empty. Swipe to add.</div>';
+  if(small) small.querySelector('.muted').innerHTML = `Save or swipe to add books. Full list is in <a href="#profile" onclick="showSection('profile')">My Profile</a>.`;
+  document.getElementById('profilePts').textContent = state.pts;
+}
+function renderHookMarks(){
+  const box = document.getElementById('hooksList'); if(!box) return;
+  if(!state.hooks.length){ box.innerHTML='<div class="muted">No HookMarks yet. Mark a book “Already read”.</div>'; return; }
+  box.innerHTML = state.hooks.map(h=>`
     <div class="tile">
       <div class="thumb"></div>
-      <div><b>${escapeHtml(a)}</b><br><span class="muted">${n} sparks</span></div>
-      <div class="stat read">Author</div>
-    </div>`).join("") || "<div class='muted'>No activity yet.</div>";
-  const readList = state.hookmarks.length?`
-    <div class="tile"><div class="thumb"></div>
-      <div><b>You</b><br><span class="muted">${state.hookmarks.length} shared</span></div>
-      <div class="stat reading">Reader</div></div>` : "<div class='muted'>No activity yet.</div>";
-  const ab = document.getElementById('authBoard'); if(ab) ab.innerHTML = authList;
-  const rb = document.getElementById('readBoard'); if(rb) rb.innerHTML = readList;
+      <div>
+        <div><b>${esc(h.title)}</b> — <span class="muted">${esc(h.author)}</span></div>
+        <div>✨ AHA: ${esc(h.aha||'-')} &nbsp; 😂 LOL: ${esc(h.lol||'-')} &nbsp; 💫 Shift: ${esc(h.shift||'-')}</div>
+      </div>
+      <div class="stat read">read</div>
+    </div>`).join('');
 }
 
-/* ========= Cover fetch ========= */
+/* -------------------- LEADERBOARDS -------------------- */
+function rebuildLeaderboards(){
+  // aggregate author impact from HookMarks
+  const byAuth = {};
+  state.hooks.forEach(h=>{
+    byAuth[h.author] ??= {name:h.author, aha:0, lol:0, brk:0};
+    if(h.aha) byAuth[h.author].aha++;
+    if(h.lol) byAuth[h.author].lol++;
+    if(h.shift) byAuth[h.author].brk++;
+  });
+  const authors = Object.values(byAuth).sort((a,b)=>(b.aha+b.lol+b.brk)-(a.aha+a.lol+a.brk)).slice(0,10);
+  const readers = [{name:'You', hooks:state.hooks.length}]; // simple seed
+
+  const authHTML = authors.length? authors.map(a=>`
+    <div class="tile"><div class="thumb"></div>
+      <div><b>${esc(a.name)}</b><div class="muted">AHA ${a.aha} · LOL ${a.lol} · Shift ${a.brk}</div></div>
+      <div class="stat read">impact</div>
+    </div>`).join('') : '<div class="muted">No data yet.</div>';
+
+  const readHTML = readers.map(r=>`
+    <div class="tile"><div class="thumb"></div>
+      <div><b>${esc(r.name)}</b><div class="muted">${r.hooks} HookMarks</div></div>
+      <div class="stat read">reader</div>
+    </div>`).join('');
+
+  const aB = document.getElementById('authLB'); const rB = document.getElementById('readLB');
+  if(aB) aB.innerHTML = authHTML; if(rB) rB.innerHTML = readHTML;
+}
+
+/* -------------------- SECTION NAV -------------------- */
+function showSection(id){
+  document.querySelectorAll('.page').forEach(p=>p.style.display='none');
+  document.getElementById(id).style.display='block';
+  if(id==='profile'){ document.getElementById('profilePts').textContent = state.pts; }
+}
+
+/* -------------------- UTILS -------------------- */
+function addPts(n){ state.pts+=n; localStorage.setItem('bh_pts',state.pts); document.getElementById('pts').textContent=state.pts+' pts'; const t=document.getElementById('ptsTop'); if(t) t.textContent=state.pts+' pts'; }
+function persist(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
+function esc(s){ return String(s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m])); }
+
+/* cover lookup */
 async function resolveCover(book){
   try{
     const q = encodeURIComponent(`intitle:${book.title} inauthor:${book.author}`);
     const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1`);
     if(res.ok){
       const data = await res.json();
-      const img = data?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail
-               || data?.items?.[0]?.volumeInfo?.imageLinks?.smallThumbnail;
+      const img = data?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail || data?.items?.[0]?.volumeInfo?.imageLinks?.smallThumbnail;
       if(img) return img.replace('http://','https://');
     }
-  }catch(e){ /* ignore */ }
+  }catch(e){}
   return null;
 }
 
-/* ========= Small utils ========= */
-function addPts(n){
-  state.pts += n; persist('bh_pts', state.pts);
-  document.getElementById("pts").textContent = state.pts+" pts";
-  const t=document.getElementById("ptsTop"); if(t) t.textContent = state.pts+" pts";
-}
-function persist(k,v){ localStorage.setItem(k, typeof v==='string'?v:JSON.stringify(v)); }
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m])); }
+/* rotating taglines */
+const TAGS = [
+  "Match readers ↔ authors by vibe",
+  "Dream Big · Do Ridiculous · Achieve Remarkable",
+  "Swipe a feeling, find a book",
+  "Tiny vibes → big reads"
+];
+let tagI=0; setInterval(()=>{ tagI=(tagI+1)%TAGS.length; const t=document.getElementById('rotTag'); if(t) t.textContent=TAGS[tagI]; }, 4200);
 </script>
 </body>
 </html>
