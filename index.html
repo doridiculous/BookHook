@@ -42,21 +42,40 @@ h1,h2{margin:0 0 10px} .muted{color:var(--muted);font-size:14px}
 .logo-text{font-weight:800;text-align:center}
 
 /* ===== Component: Discover (swipe) ===== */
-.swipe{display:grid;grid-template-columns:210px 1fr;gap:16px}
+/* === Discover card: compact, modern === */
+.swipe{display:grid;grid-template-columns:190px 1fr;gap:16px}
 @media (max-width:740px){.swipe{grid-template-columns:1fr}}
-.cover{width:100%;aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:#e5e7eb;
-  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:48px}
+.cover{
+  width:100%;aspect-ratio:2/3;border-radius:14px;overflow:hidden;
+  background:#e9eef3;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 18px rgba(0,0,0,.08)
+}
 .cover img{width:100%;height:100%;object-fit:cover;display:block}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;align-items:center}
-.chip{display:inline-flex;white-space:nowrap;padding:6px 10px;border:1px solid var(--line);
-  border-radius:999px;background:#fafafa;font-size:13px}
-.chips .chip:nth-of-type(n+7){display:none} .chips .chip.more{display:inline-flex !important}
-.hint{background:#fff7cc;border:1px solid #E7C200;padding:6px 10px;border-radius:999px;font-weight:600;font-size:12px}
-.card-gesture{position:relative;touch-action:pan-y;user-select:none;will-change:transform}
-.badge-swipe{position:absolute;top:10px;padding:6px 10px;border-radius:8px;font-weight:700;border:2px solid;background:rgba(255,255,255,.9);opacity:0;transition:opacity .15s}
-.badge-swipe.like{left:10px;color:#0a6a0a;border-color:#0a6a0a}
-.badge-swipe.nope{right:10px;color:#cc1b1b;border-color:#cc1b1b}
 
+/* Title + meta row */
+.titleWrap{display:flex;align-items:center;gap:10px;margin:6px 0 2px}
+.title{font-size:22px;line-height:1.25;font-weight:800;margin:0}
+.meta{
+  display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 10px;color:#667085;font-size:13px
+}
+.meta span{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:#fff
+}
+
+/* Chip row → horizontal scroll (keeps height tight) */
+.chips{
+  display:flex;gap:8px;margin:6px 0 10px;align-items:center;
+  overflow-x:auto;padding-bottom:2px;scrollbar-width:none
+}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  display:inline-flex;white-space:nowrap;
+  padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fafafa;font-size:13px
+}
+
+/* Buttons row */
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 /* ===== Component: Shelf / HookMarks list tiles ===== */
 .list{display:flex;flex-direction:column;gap:10px}
 .tile{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:12px;background:#fff}
