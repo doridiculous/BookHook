@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BookHook</title>
 <style>
+/* ===== Base (Apple-clean) ===== */
 :root{
   --bg:#ffffff; --fg:#111; --muted:#6b7280;
   --line:#ececec; --card:#fff; --pill:#f6f6f6;
@@ -12,6 +13,8 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+
+/* Top bar + logo */
 .bar{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;z-index:5}
 .brand{display:flex;align-items:center;gap:10px}
 .logo{height:28px;display:block}
@@ -34,9 +37,13 @@ h1,h2,h3{margin:0 0 10px}
 .pill.on{background:#000;color:#fff;border-color:#000}
 .link{color:#0a66c2;text-decoration:none}
 .center{display:flex;justify-content:center;align-items:center}
+
+/* Hero logo */
 .hero{display:flex;align-items:center;justify-content:center;gap:14px;padding:18px 12px}
 .hero svg{height:34px}
 .hero .tag{color:#6b7280;font-weight:600}
+
+/* Discover banner + carousel + cards */
 .banner{padding:10px 12px;border:1px dashed var(--line);border-radius:10px;background:#fafafa;font-weight:600}
 .carousel{position:relative;overflow:hidden}
 .track{display:flex;gap:16px;scroll-snap-type:x mandatory;overflow-x:auto;padding-bottom:6px}
@@ -49,25 +56,36 @@ h1,h2,h3{margin:0 0 10px}
 .actions{display:flex;gap:10px;margin-top:12px}
 .badgebar{display:flex;gap:10px;align-items:center;margin-bottom:6px}
 .hint{font-size:12px;color:var(--muted);margin-top:6px}
+
+/* Swipe badges */
 .card-gesture{ position:relative; touch-action:pan-y; user-select:none; }
 .badge-swipe{ position:absolute; top:10px; padding:6px 10px; border-radius:8px; font-weight:700; border:2px solid; background:rgba(255,255,255,.92); opacity:0; transition:opacity .12s ease; }
 .badge-swipe.like{ left:12px; color:#0a6a0a; border-color:#0a6a0a;}
 .badge-swipe.nope{ right:12px; color:#cc1b1b; border-color:#cc1b1b;}
+
+/* Inputs */
 .selector{display:grid;grid-template-columns:120px 1fr;gap:12px}
 @media (max-width:640px){.selector{grid-template-columns:1fr}}
 .field{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;font:inherit}
+
+/* Lists */
 .list{display:flex;flex-direction:column;gap:10px}
 .item{display:flex;align-items:center;gap:12px;padding:10px;border:1px solid var(--line);border-radius:12px;background:#fff}
 .item .thumb{width:46px;height:46px;border-radius:10px;background:#eee;overflow:hidden;flex:0 0 auto}
 .item .thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .kv{display:flex;gap:6px;flex-wrap:wrap}
 .kvp{padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:#fafafa;font-size:12px}
+
+/* Footer */
 .footer{padding:28px 0;color:var(--muted);text-align:center;font-weight:600}
 </style>
 </head>
 <body>
+
+<!-- ===== Top Bar ===== -->
 <header class="bar">
   <div class="brand">
+    <!-- Inline black logo (no upload needed) -->
     <svg class="logo" viewBox="0 0 180 28" aria-label="BookHook">
       <text x="0" y="20" font-family="SF Pro, system-ui, -apple-system, Arial" font-size="20" font-weight="800" fill="#000">BookHook</text>
     </svg>
@@ -84,6 +102,8 @@ h1,h2,h3{margin:0 0 10px}
     <span id="pts" class="badge gold">0 pts</span>
   </div>
 </header>
+
+<!-- Centered hero logo + rotating taglines -->
 <div class="wrap">
   <div class="hero">
     <svg viewBox="0 0 260 36" role="img" aria-label="BookHook">
@@ -92,34 +112,46 @@ h1,h2,h3{margin:0 0 10px}
     <span class="tag" id="rotator">Match books to your mood.</span>
   </div>
 </div>
+
 <main class="wrap">
+
+  <!-- ===== DISCOVER ===== -->
   <section class="view" id="view-discover">
     <div class="card center" style="padding:8px 14px">
       <div class="banner">Swipe left = <b>Want</b> · Swipe right = <b>Reading</b> · Tap <b>Already read</b> to add HookMarks</div>
     </div>
+
+    <!-- Feeling selectors -->
     <section class="card">
       <h2>How are you feeling?</h2>
       <div class="selector">
         <div class="muted">Mood now</div>
         <div class="pills" id="moodNowLevel"></div>
+
         <div class="muted">Desired mood</div>
         <div class="pills" id="desiredMood"></div>
+
         <div class="muted">Say it in your words</div>
         <input id="freeMood" class="field" placeholder="I am feeling…">
       </div>
       <div class="hint">Typing here will auto-map to Low / Medium / High so we can match faster.</div>
     </section>
+
     <section class="card">
       <h2>Discover</h2>
       <div class="carousel"><div id="track" class="track"></div></div>
     </section>
+
+    <!-- HookMarks modal (shown after “Already read”) -->
     <section class="card" id="reflectCard" style="display:none">
       <h2>Add HookMarks (review)</h2>
       <div class="selector">
         <div class="muted">Mood before</div>
         <div class="pills" id="moodBefore"></div>
+
         <div class="muted">Mood after</div>
         <div class="pills" id="moodAfter"></div>
+
         <div class="muted">Your takeaways</div>
         <textarea id="reflectionText" class="field" rows="4" placeholder="Big takeaway, any LOLs or AHAs…"></textarea>
       </div>
@@ -129,12 +161,16 @@ h1,h2,h3{margin:0 0 10px}
       </div>
     </section>
   </section>
+
+  <!-- ===== HOOKMARKS FEED ===== -->
   <section class="view" id="view-hookmarks" style="display:none">
     <div class="card">
       <h2>HookMarks</h2>
       <div class="list" id="feed"></div>
     </div>
   </section>
+
+  <!-- ===== MY PROFILE ===== -->
   <section class="view" id="view-profile" style="display:none">
     <div class="card">
       <h2>My Profile</h2>
@@ -146,17 +182,22 @@ h1,h2,h3{margin:0 0 10px}
         <span class="kvp">HookMarks: <b id="me-hm">0</b></span>
       </div>
     </div>
+
     <div class="card">
       <h3>Your shelf</h3>
       <div class="list" id="shelf"></div>
     </div>
   </section>
+
+  <!-- ===== COMMUNITY (Visible Profiles) ===== -->
   <section class="view" id="view-community" style="display:none">
     <div class="card">
       <h2>Community</h2>
       <div class="list" id="profiles"></div>
     </div>
   </section>
+
+  <!-- ===== LEADERBOARDS ===== -->
   <section class="view" id="view-leaders" style="display:none">
     <div class="card">
       <h2>Leaderboards</h2>
@@ -166,9 +207,12 @@ h1,h2,h3{margin:0 0 10px}
       <div class="list" id="lb-readers"></div>
     </div>
   </section>
+
   <div class="footer muted">Dream Big · Do Ridiculous · Achieve Remarkable</div>
 </main>
+
 <script>
+/* ===================== Rotating taglines ===================== */
 const TAGS=[
   "Match books to your mood.",
   "Swipe books. Win life.",
@@ -180,3 +224,314 @@ const TAGS=[
   let i=0; const el=document.getElementById('rotator');
   setInterval(()=>{ i=(i+1)%TAGS.length; el.textContent=TAGS[i]; }, 3000);
 })();
+
+/* ===================== Data (seed) ===================== */
+const LEVELS = ["Low","Medium","High"];
+const DESIRED = {
+  calm:["Calm","Grounded","Peaceful"],
+  think:["Reflective","Insightful","Curious"],
+  grow:["Empowered","Inspired","Uplifted","Entrepreneurial"],
+  fun:["Comedic","Silly","Playful"],
+  deep:["Intriguing","Arousing","Self-loving"]
+};
+const MOOD_MAP = {
+  low:["sad","down","tired","drained","anxious","overwhelmed","lonely","stressed","meh"],
+  medium:["ok","fine","neutral","calm","grounded","chill","steady"],
+  high:["happy","joyful","excited","energized","pumped","hyped","curious","inspired","motivated"]
+};
+function mapFreeMood(text){
+  const t = (text||"").toLowerCase().trim(); if(!t) return;
+  const hit = arr=>arr.some(w=>t.includes(w));
+  if(hit(MOOD_MAP.high)) setSingle("moodNowLevel","High");
+  else if(hit(MOOD_MAP.low)) setSingle("moodNowLevel","Low");
+  else setSingle("moodNowLevel","Medium");
+}
+
+/* Covers: The Ridiculous first. Magical Adventures has a known Amazon URL fallback. */
+const BOOKS = [
+  { id:"rid", title:"The Ridiculous: Book 1", author:"Jef & Mindy",
+    vibes:["Funny","Satirical","Empowering","Chill","Mindset-shifting"],
+    facts:{pace:"Medium", pages:312, year:2024}, gold:true,
+    links:{buy:"#",site:"#"}, tags:["Sci-Fi Comedy","Feel-good"] },
+  { id:"mag", title:"Magical Adventures of Lori & Bonnie B. Bunny", author:"Elaine Blackstien",
+    vibes:["Inspiring","Playful","Comedic","Uplifting"],
+    facts:{pace:"Fast", pages:248, year:2025},
+    links:{buy:"#"}, tags:["Family","Adventure"],
+    image:"https://m.media-amazon.com/images/I/51G9y5u2tAL.jpg" },
+  { id:"hab", title:"Atomic Habits of the Heart", author:"A. North",
+    vibes:["Focused","Grounded","Practical","Motivated","Calm"],
+    facts:{pace:"Fast", pages:280, year:2019},
+    links:{buy:"#"}, tags:["Tiny steps","Habit loop"] },
+  { id:"coz", title:"Star Soup & Cozy Skies", author:"L. Nova",
+    vibes:["Calm","Cozy","Comforted","Reflective"],
+    facts:{pace:"Slow", pages:220, year:2021},
+    links:{buy:"#"}, tags:["Soothing","Night read"] }
+];
+
+/* ===================== State ===================== */
+const state = {
+  moodNow:new Set(), desired:new Set(),
+  pts:Number(localStorage.getItem("bh_pts")||0),
+  shelf: JSON.parse(localStorage.getItem("bh_shelf")||"[]"),
+  feed: JSON.parse(localStorage.getItem("bh_feed")||"[]"),
+  order:[], reflecting:null
+};
+
+/* ===================== Init ===================== */
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("pts").textContent = state.pts + " pts";
+
+  document.querySelectorAll('#tabs .tab').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+
+  renderPills("moodNowLevel", LEVELS, state.moodNow);
+  renderDesired("desiredMood", DESIRED, state.desired);
+  document.getElementById('freeMood').addEventListener('change', e=>mapFreeMood(e.target.value));
+
+  renderPills("moodBefore", LEVELS, new Set());
+  renderPills("moodAfter", LEVELS, new Set());
+
+  refreshMatches();
+  buildCarousel();
+  renderShelf();
+  renderFeed();
+  renderProfiles();
+  renderLeaderboards();
+
+  showTab("discover");
+});
+
+/* ===================== UI Builders ===================== */
+function showTab(name){
+  document.querySelectorAll('.view').forEach(v=>v.style.display='none');
+  document.getElementById(`view-${name}`).style.display='block';
+  document.querySelectorAll('#tabs .tab').forEach(b=>b.classList.toggle('on', b.dataset.tab===name));
+  if(name==="profile") updateMyStats();
+}
+function renderPills(containerId, items, set){
+  const box = document.getElementById(containerId); box.innerHTML="";
+  items.forEach(x=>{
+    const b = document.createElement('button'); b.className='pill'; b.textContent=x;
+    if(set.has(x)) b.classList.add('on');
+    b.addEventListener('click',()=>{
+      if(set.has(x)){ set.delete(x); b.classList.remove('on'); }
+      else { set.add(x); b.classList.add('on'); }
+      if(containerId==="moodNowLevel" || containerId==="desiredMood"){ refreshMatches(); buildCarousel(); }
+    });
+    box.appendChild(b);
+  });
+}
+function renderDesired(containerId, groups, set){
+  const box = document.getElementById(containerId); box.innerHTML="";
+  Object.entries(groups).forEach(([key,arr])=>{
+    const row=document.createElement('div'); row.className='row'; row.style.marginTop='6px';
+    const lbl=document.createElement('div'); lbl.className='kvp';
+    lbl.textContent=({calm:"Calm",think:"Think",grow:"Growth",fun:"Fun",deep:"Deep"})[key]||key;
+    row.appendChild(lbl);
+    const grp=document.createElement('div'); grp.className='pills';
+    arr.forEach(x=>{
+      const b=document.createElement('button'); b.className='pill'; b.textContent=x;
+      if(set.has(x)) b.classList.add('on');
+      b.addEventListener('click',()=>{ if(set.has(x)){set.delete(x);b.classList.remove('on');} else {set.add(x);b.classList.add('on');} refreshMatches(); buildCarousel();});
+      grp.appendChild(b);
+    });
+    row.appendChild(grp);
+    box.appendChild(row);
+  });
+}
+
+/* ===================== Matching + Carousel ===================== */
+function score(b){
+  const inter=(arr,set)=>arr.filter(x=>set.has(x)).length;
+  let s = inter(b.vibes||[], state.desired)*1.4 + inter(b.vibes||[], state.moodNow)*0.6;
+  if(b.gold) s += 2.5;
+  return s;
+}
+function refreshMatches(){
+  state.order = BOOKS.filter(b=>b.image).sort((a,b)=>score(b)-score(a));
+}
+function buildCarousel(){
+  const track=document.getElementById('track'); track.innerHTML="";
+  if(state.order.length===0){
+    track.innerHTML='<div class="muted" style="padding:20px">Fetching covers… books without covers are hidden until found.</div>';
+    BOOKS.forEach(b=>{ if(!b.image && !b._coverRequested){ b._coverRequested=true; resolveCover(b).then(u=>{ if(u){ b.image=u; refreshMatches(); buildCarousel(); } }); }});
+    return;
+  }
+  state.order.forEach(b=>{
+    const card=document.createElement('div'); card.className='card book card-gesture';
+    card.innerHTML = `
+      <div class="cover"><img src="${b.image}" alt="Cover of ${escapeHtml(b.title)}"></div>
+      <div>
+        <div class="badgebar">
+          ${b.gold?'<span class="chip" style="background:#fff7cc;border-color:#E7C200">Featured</span>':''}
+          <span class="chip">${Math.round(score(b)*10)/10} pts</span>
+          <a class="link" style="margin-left:auto" href="#hookmarks" onclick="showTab('hookmarks')">See HookMarks →</a>
+        </div>
+        <h2 style="margin:6px 0 2px">${escapeHtml(b.title)}</h2>
+        <div class="muted">by <b>${escapeHtml(b.author)}</b></div>
+        <div class="chips">${buildChips(b).join("")}</div>
+        <div class="actions">
+          <button class="btn" onclick="mark('${b.id}','want')">Want (+5)</button>
+          <button class="btn" onclick="mark('${b.id}','reading')">Reading (+7)</button>
+          <button class="btn gold" onclick="openReflect('${b.id}')">Already read</button>
+          ${b.links?.site?`<a class="btn ghost" href="${b.links.site}">Website</a>`:""}
+          ${b.links?.buy?`<a class="btn ghost" href="${b.links.buy}">Buy</a>`:""}
+        </div>
+        <div class="hint">Swipe left = Want · Swipe right = Reading · Tap “Already read” to review.</div>
+        <span class="badge-swipe like">READING</span>
+        <span class="badge-swipe nope">WANT</span>
+      </div>`;
+    addSwipe(card, ()=>mark(b.id,'want'), ()=>mark(b.id,'reading'));
+    track.appendChild(card);
+  });
+}
+function buildChips(b){
+  const chips=[...(b.vibes||[]), b.facts?.pace, b.facts?.pages?`${b.facts.pages}p`:null, b.facts?.year?`Since ${b.facts.year}`:null, ...(b.tags||[])]
+    .filter(Boolean).slice(0,9);
+  return chips.map(c=>`<span class="chip">${escapeHtml(c)}</span>`);
+}
+function addSwipe(el,onLeft,onRight){
+  let startX=0,dx=0,drag=false; const th=80;
+  const like=el.querySelector('.badge-swipe.like'), nope=el.querySelector('.badge-swipe.nope');
+  const down=e=>{drag=true; startX=(e.touches?e.touches[0]:e).clientX; el.style.transition='';};
+  const move=e=>{ if(!drag) return; const x=(e.touches?e.touches[0]:e).clientX; dx=x-startX; const rot=dx/14; el.style.transform=`translateX(${dx}px) rotate(${rot}deg)`; const a=Math.min(1,Math.abs(dx)/120); if(dx>0){if(like)like.style.opacity=a; if(nope)nope.style.opacity=0;} else {if(nope)nope.style.opacity=a; if(like)like.style.opacity=0;} };
+  const snap=()=>{ el.style.transition='transform .18s ease'; el.style.transform='translateX(0) rotate(0)'; if(like) like.style.opacity=0; if(nope) nope.style.opacity=0; };
+  const up=()=>{ if(!drag) return; drag=false; if(dx>th){ el.style.transition='transform .18s ease'; el.style.transform='translateX(500px) rotate(15deg)'; setTimeout(onRight,140); } else if(dx<-th){ el.style.transition='transform .18s ease'; el.style.transform='translateX(-500px) rotate(-15deg)'; setTimeout(onLeft,140); } else snap(); };
+  el.addEventListener('pointerdown',down); el.addEventListener('pointermove',move); el.addEventListener('pointerup',up); el.addEventListener('pointercancel',up);
+}
+
+/* ===================== Actions ===================== */
+function mark(id,status){
+  const b=BOOKS.find(x=>x.id===id); if(!b) return;
+  const ex=state.shelf.find(x=>x.id===id);
+  if(ex){ ex.status=status; }
+  else { state.shelf.unshift({id:b.id,title:b.title,author:b.author,image:b.image,status}); }
+  saveShelf(); renderShelf(); addPts(status==='want'?5:7);
+}
+function openReflect(id){
+  const b=BOOKS.find(x=>x.id===id); if(!b) return;
+  state.reflecting = {id:b.id,title:b.title,author:b.author,image:b.image};
+  renderPills("moodBefore", LEVELS, new Set());
+  renderPills("moodAfter", LEVELS, new Set());
+  document.getElementById('reflectionText').value="";
+  document.getElementById('reflectCard').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function closeReflect(){ state.reflecting=null; document.getElementById('reflectCard').style.display='none'; }
+function submitReflection(){
+  const before = pickSet("moodBefore");
+  const after  = pickSet("moodAfter");
+  const text   = document.getElementById('reflectionText').value.trim();
+  if(!state.reflecting) return;
+  state.feed.unshift({ bookId:state.reflecting.id, bookTitle:state.reflecting.title, author:state.reflecting.author, before, after, text, by:"You" });
+  localStorage.setItem("bh_feed", JSON.stringify(state.feed));
+  mark(state.reflecting.id,'read');
+  renderFeed(); renderLeaderboards(); addPts(20); closeReflect();
+}
+
+/* ===================== Other Views ===================== */
+function renderShelf(){
+  const box=document.getElementById('shelf'); if(!box) return;
+  box.innerHTML="";
+  if(!state.shelf.length){ box.innerHTML='<div class="muted">Your shelf is empty — swipe some books!</div>'; return; }
+  state.shelf.forEach(it=>{
+    const el=document.createElement('div'); el.className='item';
+    el.innerHTML=`
+      <div class="thumb">${it.image?`<img src="${it.image}" alt="">`:''}</div>
+      <div style="flex:1">
+        <div><b>${escapeHtml(it.title)}</b></div>
+        <div class="muted">by ${escapeHtml(it.author)}</div>
+      </div>
+      <span class="kvp">${it.status}</span>
+      ${it.status!=='read'?`<button class="btn" onclick="openReflect('${it.id}')">Mark read</button>`:''}
+      <button class="btn" onclick="removeFromShelf('${it.id}')">Remove</button>`;
+    box.appendChild(el);
+  });
+}
+function removeFromShelf(id){ state.shelf = state.shelf.filter(x=>x.id!==id); saveShelf(); renderShelf(); renderLeaderboards(); }
+function renderFeed(){
+  const feed=document.getElementById('feed'); feed.innerHTML="";
+  if(!state.feed.length){ feed.innerHTML='<div class="muted">No HookMarks yet — add one from “Already read”.</div>'; return; }
+  state.feed.forEach(f=>{
+    const el=document.createElement('div'); el.className='item';
+    el.innerHTML=`<div style="flex:1">
+      <div><b>${escapeHtml(f.bookTitle)}</b> · <span class="muted">by ${escapeHtml(f.author)}</span></div>
+      <div class="kv" style="margin:6px 0">
+        <span class="kvp">Before: ${escapeHtml(f.before||'-')}</span>
+        <span class="kvp">After: ${escapeHtml(f.after||'-')}</span>
+        <span class="kvp">by ${escapeHtml(f.by)}</span>
+      </div>
+      ${f.text?`<div class="muted">“${escapeHtml(f.text)}”</div>`:''}
+    </div>`;
+    feed.appendChild(el);
+  });
+}
+function renderProfiles(){
+  const seen=new Set();
+  const authors = BOOKS.map(b=>({name:b.author, role:"Author", books:[b.title], hookmarks: state.feed.filter(f=>f.author===b.author).length}))
+    .filter(a=>{ const k=a.name; if(seen.has(k)) return false; seen.add(k); return true; });
+  const readers = [{name:"Guest Reader", role:"Reader", books:state.shelf.filter(s=>s.status==='read').map(s=>s.title), hookmarks: state.feed.filter(f=>f.by==="You").length}];
+  const all=[...authors,...readers];
+  const box=document.getElementById('profiles'); box.innerHTML="";
+  all.forEach(p=>{
+    const el=document.createElement('div'); el.className='item';
+    el.innerHTML=`<div class="thumb"></div>
+      <div style="flex:1"><div><b>${escapeHtml(p.name)}</b> <span class="kvp">${p.role}</span></div>
+      <div class="muted">${p.books.slice(0,3).join(" • ")}${p.books.length>3?" …":""}</div></div>
+      <span class="kvp">HookMarks: <b>${p.hookmarks}</b></span>
+      <button class="btn">View profile</button>`;
+    box.appendChild(el);
+  });
+}
+function renderLeaderboards(){
+  const byAuthor={}; state.feed.forEach(f=>{ byAuthor[f.author]=(byAuthor[f.author]||0)+1; });
+  const authors=Object.entries(byAuthor).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const la=document.getElementById('lb-authors'); la.innerHTML=authors.length?'':'<div class="muted">No author stats yet.</div>';
+  authors.forEach(([name,score])=>{ const el=document.createElement('div'); el.className='item'; el.innerHTML=`<div class="thumb"></div><div style="flex:1"><b>${escapeHtml(name)}</b></div><span class="kvp">HookMarks: <b>${score}</b></span>`; la.appendChild(el); });
+
+  const byReader={}; state.feed.forEach(f=>{ byReader[f.by]=(byReader[f.by]||0)+1; });
+  const readers=Object.entries(byReader).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const lr=document.getElementById('lb-readers'); lr.innerHTML=readers.length?'':'<div class="muted">No reader stats yet.</div>';
+  readers.forEach(([name,score])=>{ const el=document.createElement('div'); el.className='item'; el.innerHTML=`<div class="thumb"></div><div style="flex:1"><b>${escapeHtml(name)}</b></div><span class="kvp">HookMarks: <b>${score}</b></span>`; lr.appendChild(el); });
+
+  updateMyStats();
+}
+function updateMyStats(){
+  document.getElementById('me-role').textContent="Reader";
+  const want=state.shelf.filter(s=>s.status==='want').length;
+  const reading=state.shelf.filter(s=>s.status==='reading').length;
+  const read=state.shelf.filter(s=>s.status==='read').length;
+  const hm=state.feed.filter(f=>f.by==="You").length;
+  document.getElementById('me-want').textContent=want;
+  document.getElementById('me-reading').textContent=reading;
+  document.getElementById('me-read').textContent=read;
+  document.getElementById('me-hm').textContent=hm;
+}
+
+/* ===================== Persistence & Utils ===================== */
+function addPts(n){ state.pts += n; localStorage.setItem("bh_pts", state.pts); document.getElementById("pts").textContent = state.pts + " pts"; }
+function saveShelf(){ localStorage.setItem("bh_shelf", JSON.stringify(state.shelf)); }
+function pickSet(containerId){ const els=document.getElementById(containerId).querySelectorAll('.pill.on'); return els.length?els[0].textContent:null; }
+function setSingle(containerId,val){ const box=document.getElementById(containerId); box.querySelectorAll('.pill').forEach(p=>p.classList.toggle('on',p.textContent===val)); const set=(containerId==="moodNowLevel"?state.moodNow:state.desired); set.clear(); set.add(val); refreshMatches(); buildCarousel(); }
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
+
+/* Cover fetch: Google Books → Open Library; if none, hide */
+async function resolveCover(book){
+  try{
+    const q = encodeURIComponent(`intitle:${book.title} inauthor:${book.author}`);
+    const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1`);
+    if(res.ok){
+      const data = await res.json();
+      const img = data?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail
+               || data?.items?.[0]?.volumeInfo?.imageLinks?.smallThumbnail;
+      if(img) return img.replace('http://','https://');
+    }
+  }catch(e){}
+  if(book.isbn){
+    const url = `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg`;
+    try{ const head=await fetch(url,{method:'HEAD'}); if(head.ok) return url; }catch(e){}
+  }
+  return null;
+}
+</script>
+</body>
+</html>
