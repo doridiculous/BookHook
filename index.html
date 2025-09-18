@@ -32,6 +32,14 @@ h1,h2{margin:0 0 10px} .muted{color:var(--muted);font-size:14px}
 .pill.on{background:#111;color:#fff;border-color:#111}
 .divider{height:1px;background:var(--line);margin:12px 0}
 
+  /* ===== Component: Feeling section ===== */
+.feelBox{display:grid;grid-template-columns:1fr auto;gap:8px;margin:6px 0 10px}
+.feelChips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.feelChip{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fafafa;cursor:pointer}
+.feelChip.on{background:#111;color:#fff;border-color:#111}
+.examples{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.examples .hint{background:#fff7cc;border:1px solid #E7C200;padding:6px 10px;border-radius:999px;font-weight:600;font-size:12px}
+  
 /* ===== Component: Top Nav ===== */
 .bar{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:3}
 .nav{display:flex;gap:8px;flex-wrap:wrap}
@@ -132,19 +140,21 @@ footer{padding:28px 14px;text-align:center;color:#666}
 ========================================================= -->
 <section class="card" id="feelingSection">
   <h2>How I’m feeling</h2>
-  <div class="row">
-    <input id="moodFree" class="field" placeholder="I am feeling … (tired, anxious, pumped…)" />
+
+  <div class="feelBox">
+    <input id="moodFree" class="field" placeholder="Type how you feel… (e.g. anxious, excited, pumped)" />
     <button id="setMoodFree" class="btn small">Set</button>
   </div>
-  <div class="row">
-    <span class="lbl">Level:</span>
-    <div class="pills">
-      <button class="pill" onclick="setLevel('Low')">Low</button>
-      <button class="pill" onclick="setLevel('Medium')">Medium</button>
-      <button class="pill" onclick="setLevel('High')">High</button>
-    </div>
+
+  <div class="feelChips" id="recentFeels"></div>
+
+  <div class="examples">
+    <span class="hint">Low</span>
+    <span class="hint">Medium</span>
+    <span class="hint">High</span>
   </div>
-  <div class="muted">Type how you feel (“overwhelmed”, “hyped”) or tap a level. This guides your matches.</div>
+
+  <div class="muted">Your vibe nudges the matches below.</div>
 </section>
 
 <!-- =========================================================
@@ -456,6 +466,31 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   renderDesiredTabs(); renderDesiredPills();
   await prefetchCovers(); refreshMatches();
   renderShelf(); renderHookMarks(); rebuildBoards();
+});
+  /*************** Feeling Enhancements ***************/
+const recentFeels = [];
+
+function renderRecentFeels(){
+  const box = document.getElementById('recentFeels');
+  if(!box) return;
+  box.innerHTML = recentFeels.map(f =>
+    `<span class="feelChip" onclick="setLevel('${f}')">${f}</span>`
+  ).join('');
+}
+
+document.getElementById('setMoodFree').addEventListener('click', ()=>{
+  const val = document.getElementById('moodFree').value.trim();
+  if(!val) return;
+  if(!recentFeels.includes(val)){
+    recentFeels.unshift(val);
+    if(recentFeels.length>3) recentFeels.pop();
+  }
+  renderRecentFeels();
+  mapFreeMood(val);
+});
+
+document.getElementById('moodFree').addEventListener('keypress', e=>{
+  if(e.key==='Enter') document.getElementById('setMoodFree').click();
 });
 </script>
 </body>
