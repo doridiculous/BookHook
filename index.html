@@ -56,8 +56,24 @@
   .cover{width:100%;aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:#ddd;
          display:flex;align-items:center;justify-content:center;font-weight:800;font-size:48px}
   .cover img{width:100%;height:100%;object-fit:cover;display:block}
-  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;align-items:center}
-  .chip{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fafafa;font-size:13px;display:inline-flex}
+.chips {
+  display:flex;           /* lays chips in a row */
+  flex-wrap:wrap;         /* wrap if too long */
+  gap:6px;                /* space between */
+  margin-top:6px;
+  align-items:center;
+}
+
+.chip {
+  display:inline-flex;
+  align-items:center;
+  white-space:nowrap;     /* keep each chip on one line */
+  padding:6px 10px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:#fafafa;
+  font-size:13px;
+}
   .bar-mini{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
   .tab{padding:6px 10px;border-radius:999px;border:1px solid var(--line);font-weight:600;font-size:12px;background:#fff}
   .tab.hint{background:#fff7cc;border-color:#E7C200}
