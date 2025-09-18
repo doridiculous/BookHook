@@ -29,7 +29,12 @@ h2{margin:0 0 8px}
 .hero{display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;gap:14px}
 .hero .bigLogo svg{width:88px;height:88px}
 .hero .brandline{font-weight:800;font-size:28px}
-.hero .tagline{font-size:14px;color:#444}
+.tagline{font-size:14px;color:#444}
+
+/* Rotating tagline in HERO */
+.tag-rotator{min-height:22px;font-size:14px;color:#333;margin-top:2px}
+.taglineSpan{opacity:0;transition:opacity .35s ease}
+.taglineSpan.show{opacity:1}
 
 /* Deck / carousel */
 .deckHead{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:8px}
@@ -45,11 +50,6 @@ h2{margin:0 0 8px}
 .dots{display:flex;gap:6px;justify-content:center;margin-top:10px}
 .dot{width:6px;height:6px;border-radius:999px;background:#d0d0d0}
 .dot.on{background:#111}
-
-/* Rotating tagline under Discover */
-.tag-rotator{min-height:22px;font-size:14px;color:#333;margin-top:-2px}
-.taglineSpan{opacity:0;transition:opacity .35s ease}
-.taglineSpan.show{opacity:1}
 
 /* swipe card */
 .swipe{display:grid;grid-template-columns:240px 1fr;gap:16px;align-items:start}
@@ -130,7 +130,8 @@ h2{margin:0 0 8px}
       </svg>
     </div>
     <div class="brandline">BookHook</div>
-    <div class="tagline">Dream Big · Do Ridiculous · Achieve Remarkable</div>
+    <!-- Rotating tagline here -->
+    <div class="tag-rotator"><span id="rotLine" class="taglineSpan"></span></div>
   </section>
 
   <!-- SWIPE / CAROUSEL -->
@@ -138,7 +139,10 @@ h2{margin:0 0 8px}
     <div class="deckHead">
       <div>
         <h2 style="margin:0">Discover</h2>
-        <div class="tag-rotator"><span id="rotLine" class="taglineSpan"></span></div>
+        <!-- Static motto under Discover -->
+        <div class="tagline" style="margin-top:2px;color:#333">
+          Dream Big · Do Ridiculous · Achieve Remarkable
+        </div>
       </div>
       <div class="legend">
         <span>⬅️ Want</span><span>➡️ Reading</span><span>Tap “Already read” to reflect</span>
@@ -211,7 +215,7 @@ const BOOKS = [
     vibes:["Funny","Satirical","Empowered","Playful","Mindset-shifting"],
     facts:{pace:"Medium", pages:312, year:2024},
     gold:true,
-    image:"", // can paste a fixed Amazon image URL here; otherwise auto-fetch
+    image:"", // if you have a fixed cover URL, paste it here to skip lookup
     links:{buy:"#", site:"#"},
     tags:["Sci-Fi Comedy","Feel-good"]
   },
@@ -256,7 +260,7 @@ const DESIRED_MOODS = [
   "Self-loving","Enterprising","Calm","Hopeful","Playful","Connected"
 ];
 
-/* ---------- Rotating tagline lines (your picks) ---------- */
+/* ---------- Rotating tagline lines ---------- */
 const ROT_LINES = [
   "Swipe through books. Build your shelf. Share your story.",
   "Flick. Flip. Swipe. Who knew reading could feel like dating?",
@@ -299,10 +303,10 @@ function startTaglineRotation(){
       span.textContent = ROT_LINES[state.rotIdx % ROT_LINES.length];
       span.classList.add('show');
       state.rotIdx++;
-    }, 200); // brief fade-out before swap
+    }, 200);
   };
   setLine();
-  setInterval(setLine, 4000); // change every 4s
+  setInterval(setLine, 4000);
 }
 
 /* ---------- Covers ---------- */
