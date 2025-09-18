@@ -466,7 +466,80 @@ function score(b){
   if(b.gold) s += 2;
   return s;
 }
-function refreshMatches(){
+function show(idx){
+  if(state.order.length===0){
+    document.getElementById("swipe").innerHTML =
+      '<div class="muted">No books yet.</div>';
+    return;
+  }
+
+  const b  = state.order[idx % state.order.length];
+  const el = document.getElementById("swipe");
+
+  // Build horizontal chips: vibes + a few facts
+  const chips = [
+    ...(b.vibes || []),
+    b.facts?.pace || null,
+    b.facts?.pages ? `${b.facts.pages}p` : null,
+    b.facts?.year  ? `Since ${b.facts.year}` : null,
+    ...(b.tags || [])
+  ].filter(Boolean);
+
+  // Cover (image if available; letter fallback)
+  const coverHTML = b.image
+    ? `<div class="cover"><img src="${b.image}" alt="Cover of ${escapeHtml(b.title)}"></div>`
+    : `<div class="cover" aria-hidden="true">${escapeHtml(b.title).slice(0,1)}</div>`;
+
+  // Card UI
+  el.innerHTML = `
+    <div id="card" class="card-gesture swipe">
+      ${coverHTML}
+      <div>
+        <div class="bar-mini">
+          ${b.gold ? '<span class="tab hint">Featured</span>' : ''}
+          <span class="tab">${state.pts} pts</span>
+          <a class="tab" href="#hookmarks">See HookMarks →</a>
+        </div>
+
+        <h2 style="margin:4px 0 6px">${escapeHtml(b.title)}</h2>
+        <div class="muted">by ${escapeHtml(b.author)}</div>
+
+        <div class="chips">
+          ${chips.map(c => `<span class="chip">${escapeHtml(c)}</span>`).join('')}
+        </div>
+
+        <div class="actions" style="margin-top:10px">
+          <button class="btn"        onclick="markWant('${b.id}')">Want (+5)</button>
+          <button class="btn gold"   onclick="markReading('${b.id}')">Reading (+7)</button>
+          <button class="btn"        onclick="markRead('${b.id}')">Already read</button>
+        </div>
+
+        <div class="divider"></div>
+        <div class="author">
+          <b>Author</b> · <span class="muted">${escapeHtml(b.author)}</span>
+          ${b.links?.site ? `· <a class="link" href="${b.links.site}">Website</a>` : ''}
+          ${b.links?.buy  ? `· <a class="link" href="${b.links.buy}">Buy</a>`       : ''}
+        </div>
+      </div>
+
+      <span class="badge-swipe like">SAVE</span>
+      <span class="badge-swipe nope">NOPE</span>
+    </div>
+  `;
+
+  // Auto-fetch a cover if missing
+  if(!b.image && !b._coverRequested){
+    b._coverRequested = true;
+    resolveCover(b).then(url=>{
+      if(url){
+        b.image = url;
+        el.querySelector(".cover").innerHTML =
+          `<img src="${url}" alt="Cover of ${escapeHtml(b.title)}">`;
+      }
+    });
+  }
+}
+  function refreshMatches(){
   const withImg = BOOKS.filter(b=>b.image);
   state.order = [...(withImg.length?withImg:BOOKS)].sort((a,b)=>score(b)-score(a));
   show(0);
