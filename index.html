@@ -134,7 +134,7 @@ h2{margin:0 0 8px}
     <div id="dots" class="dots"></div>
   </section>
 
-  <!-- Mood & Desired Read BELOW deck -->
+  <!-- Mood & Desired MOOD BELOW deck -->
   <section class="card">
     <h2>Your Reading Vibe</h2>
     <div class="row">
@@ -142,8 +142,8 @@ h2{margin:0 0 8px}
       <div id="moodNow" class="pills"></div>
     </div>
     <div class="row">
-      <div class="small" style="min-width:110px;color:#555">Desired read</div>
-      <div id="desiredRead" class="pills"></div>
+      <div class="small" style="min-width:110px;color:#555">Desired mood</div>
+      <div id="desiredMood" class="pills"></div>
     </div>
     <div class="row" style="margin-top:8px;justify-content:flex-end">
       <button class="btn ghost" onclick="resetVibe()">Reset</button>
@@ -203,7 +203,7 @@ const BOOKS = [
     id:"rid",
     title:"The Ridiculous: Book 1",
     author:"Jef & Mindy",
-    vibes:["Funny","Satirical","Empowering","Chill","Mindset-shifting"],
+    vibes:["Funny","Satirical","Empowered","Chill","Mindset-shifting"],
     facts:{pace:"Medium", pages:312, year:2024},
     gold:true,
     image:"",
@@ -234,10 +234,10 @@ const BOOKS = [
 
 /* ---------- Vibe controls ---------- */
 const MOOD_LEVELS = ["Low","Medium","High"];
-const DESIRED = [
-  "Restful","Reflective","Insightful","Empowering","Intriguing",
-  "Educational","Comedic","Silly","Inspiring","Arousing",
-  "Uplifting","Self-loving","Entrepreneurial"
+const DESIRED_MOODS = [
+  "Rested","Reflective","Insightful","Empowered","Intrigued",
+  "Educated","Comedic","Silly","Inspired","Aroused",
+  "Uplifted","Self-loving","Enterprising","Calm","Hopeful","Playful","Connected"
 ];
 
 /* ---------- State ---------- */
@@ -246,7 +246,7 @@ const state = {
   deck: [], idx: 0,
   shelf: JSON.parse(localStorage.getItem("bh_shelf")||"[]"),
   pendingRead: null,
-  vibe:{ mood: localStorage.getItem('bh_mood')||'', desired: new Set(JSON.parse(localStorage.getItem('bh_desired')||'[]')) }
+  vibe:{ mood: localStorage.getItem('bh_mood')||'', desired: new Set(JSON.parse(localStorage.getItem('bh_desired_mood')||'[]')) }
 };
 function saveShelf(){ localStorage.setItem("bh_shelf", JSON.stringify(state.shelf)); }
 function addPts(n){ state.pts+=n; localStorage.setItem("bh_pts",state.pts); document.getElementById("pts").textContent=state.pts+" pts"; const t=document.getElementById("toast"); t.textContent=`+${n} pts`; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),900); }
@@ -445,7 +445,7 @@ function renderReflection(r){
 }
 function removeFromShelf(id){ state.shelf = state.shelf.filter(x=>x.id!==id); saveShelf(); renderShelf(); }
 
-/* ---------- Vibe UI ---------- */
+/* ---------- Vibe UI (Desired mood) ---------- */
 function buildPills(id, options, setObj){
   const box = document.getElementById(id); box.innerHTML='';
   options.forEach(label=>{
@@ -460,7 +460,7 @@ function buildPills(id, options, setObj){
   });
 }
 function buildVibeUI(){
-  // mood now (single select)
+  // Mood now (single select)
   const moodBox = document.getElementById('moodNow'); moodBox.innerHTML='';
   MOOD_LEVELS.forEach(m=>{
     const b=document.createElement('button'); b.className='pill'; b.textContent=m;
@@ -468,8 +468,8 @@ function buildVibeUI(){
     b.onclick=()=>{ state.vibe.mood = (state.vibe.mood===m?'':m); [...moodBox.children].forEach(c=>c.classList.remove('on')); if(state.vibe.mood) b.classList.add('on'); };
     moodBox.appendChild(b);
   });
-  // desired read (multi)
-  buildPills('desiredRead', DESIRED, state.vibe.desired);
+  // Desired mood (multi)
+  buildPills('desiredMood', DESIRED_MOODS, state.vibe.desired);
 }
 function resetVibe(){
   state.vibe.mood=''; state.vibe.desired = new Set();
@@ -477,11 +477,18 @@ function resetVibe(){
 }
 function saveVibe(){
   localStorage.setItem('bh_mood', state.vibe.mood||'');
-  localStorage.setItem('bh_desired', JSON.stringify([...state.vibe.desired]));
+  localStorage.setItem('bh_desired_mood', JSON.stringify([...state.vibe.desired]));
   addPts(3); toast('Vibe saved');
 }
 
 /* ---------- Helpers ---------- */
+function buildDots(){
+  const dots = document.getElementById('dots');
+  if(!state.deck.length){ dots.innerHTML=''; return; }
+  dots.innerHTML = state.deck.map((_,i)=>`<span class="dot ${i===state.idx?'on':''}"></span>`).join('');
+}
+function nextOnly(){ state.idx = (state.idx+1)%state.deck.length; showCard(); setCount(); }
+function prevCard(){ state.idx = (state.idx-1+state.deck.length)%state.deck.length; showCard(); setCount(); }
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),900); }
 function escape(s){return String(s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
 </script>
