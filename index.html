@@ -353,71 +353,140 @@ function renderDesiredPills(){
 }
 function toggleDesired(n){ if(state.desired.has(n)) state.desired.delete(n); else state.desired.add(n); renderDesiredPills(); refreshMatches(); }
 
-/*************** Discover (covers + swipe) ***************/
-async function prefetchCovers(){
-  await Promise.all(BOOKS.map(async b=>{
-    if(b.image){b._hasImg=true;return;}
-    try{
-      const q=encodeURIComponent(`intitle:${b.title} inauthor:${b.author}`);
-      const res=await fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1`);
-      if(res.ok){
-        const data=await res.json();
-        const img=data?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail
-               || data?.items?.[0]?.volumeInfo?.imageLinks?.smallThumbnail;
-        if(img){ b.image=img.replace('http://','https://'); b._hasImg=true; }
-      }
-    }catch(e){}
-    if(!b.image) b._skip=true;
-  }));
-}
+<script>
+/* ---------- DISCOVER: scoring + chips + swipe ---------- */
+
+const SHOW_PACE = false;          // set true if you want ⏱ pace shown
+const CHIP_MAX   = 6;             // how many chips before we show “+ more”
+
 function score(b){
-  const inter=(arr,set)=>arr.filter(x=>set.has(x)).length;
-  let s=inter(b.vibes||[],state.desired)*1.4;
-  if(state.moodNowLevel==='Low') s+=0.2;
-  if(state.moodNowLevel==='High') s+=0.1;
-  if(b.gold) s+=2.5;
+  const inter = (arr,set)=>arr.filter(x=>set.has(x)).length;
+  let s = inter(b.vibes||[], state.desired) * 1.4;
+  if (state.moodNowLevel === 'Low')  s += 0.2;
+  if (state.moodNowLevel === 'High') s += 0.1;
+  if (b.gold) s += 2.5;
   return s;
 }
+
+function pickChips(b){
+  const chips = [];
+
+  // Primary “feel” chips first (what users latch onto)
+  if (Array.isArray(b.vibes)) chips.push(...b.vibes);
+
+  // Book facts (compact & readable)
+  if (SHOW_PACE && b?.facts?.pace)  chips.push(`⏱ ${b.facts.pace}`);
+  if (b?.facts?.pages)              chips.push(`📄 ${b.facts.pages}p`);
+  if (b?.facts?.year)               chips.push(`📅 since ${b.facts.year}`);
+
+  // Optional tags you’ve added to the book
+  if (Array.isArray(b.tags)) chips.push(...b.tags);
+
+  // Limit to CHIP_MAX + “+ more”
+  const more = Math.max(0, chips.length - CHIP_MAX);
+  const visible = chips.slice(0, CHIP_MAX);
+  if (more) visible.push(`+ ${more} more`);
+  return visible;
+}
+
 function refreshMatches(){
-  const pool=BOOKS.filter(b=>!b._skip);
-  state.order=pool.sort((a,b)=>score(b)-score(a));
+  const pool = BOOKS.filter(b => !b._skip); // _skip is set when no cover found
+  state.order = [...pool].sort((a,b)=>score(b)-score(a));
   show(0);
 }
+
 function show(idx){
-  if(!state.order.length){ $('#swipe').innerHTML='<div class="muted">No books yet.</div>'; return; }
-  const b=state.order[idx%state.order.length];
-  const rawChips=[...(b.vibes||[]), b.facts?.pace, b.facts?.pages?`${b.facts.pages}p`:null, b.facts?.year?`Since ${b.facts.year}`:null].filter(Boolean);
-  const max=6;
-  const chipsHtml=rawChips.slice(0,max).map(c=>`<span class="chip">${escapeHtml(c)}</span>`).join('')+(rawChips.length>max?`<span class="chip more">+ ${rawChips.length-max} more</span>`:'');
-  $('#swipe').innerHTML=`
+  const el = document.getElementById('swipe');
+  if (!state.order.length){ el.innerHTML = '<div class="muted">No books yet.</div>'; return; }
+
+  const b = state.order[idx % state.order.length];
+
+  const coverHTML = b.image
+    ? `<img src="${b.image}" alt="Cover of ${escapeHtml(b.title)}">`
+    : escapeHtml((b.title||'?').slice(0,1));
+
+  const chipsHTML = pickChips(b).map(c => `<span class="chip">${escapeHtml(c)}</span>`).join('');
+
+  el.innerHTML = `
     <div id="card" class="card-gesture swipe">
-      <div class="cover">${b.image?`<img src="${b.image}" alt="Cover of ${escapeHtml(b.title)}">`:escapeHtml(b.title[0]||'?')}</div>
+      <div class="cover">${coverHTML}</div>
       <div>
-        <div class="row" style="justify-content:space-between;align-items:center">
-          <div>${b.gold?'<span class="badge gold">Featured</span>':''}</div>
-          <div class="badge gold" id="ptsTop">${state.pts} pts</div>
+        <div class="titleWrap">
+          <h3 class="title">${escapeHtml(b.title)}</h3>
         </div>
-        <h2 style="margin:6px 0 4px">${escapeHtml(b.title)}</h2>
-        <div class="muted">by ${escapeHtml(b.author)}</div>
-        <div class="chips">${chipsHtml}</div>
-        <div class="row" style="gap:8px;margin-top:10px">
-          <button class="btn" onclick="markShelf('${b.id}','want')">Want (+5)</button>
-          <button class="btn" onclick="markShelf('${b.id}','reading')">Reading (+7)</button>
-          <button class="btn gold" onclick="startHookmark('${b.id}')">Already read</button>
+        <div class="muted">by ${escapeHtml(b.author||'')}</div>
+
+        <div class="chips">${chipsHTML}</div>
+
+        <div class="actions">
+          <button class="btn"        onclick="markShelf('${b.id}','want')">Want (+5)</button>
+          <button class="btn"        onclick="markShelf('${b.id}','reading')">Reading (+7)</button>
+          <button class="btn gold"   onclick="startHookmark('${b.id}')">Already read</button>
         </div>
       </div>
-      <span class="badge-swipe like">SAVE</span><span class="badge-swipe nope">NOPE</span>
-    </div>`;
-  addSwipe(document.getElementById('card'), ()=>markShelf(b.id,'want'), ()=>markShelf(b.id,'reading'));
+
+      <span class="badge-swipe like">SAVE</span>
+      <span class="badge-swipe nope">NOPE</span>
+    </div>
+  `;
+
+  // Bind swipe every render
+  const card = document.getElementById('card');
+  addSwipe(card, 
+    () => markShelf(b.id, 'want'), 
+    () => markShelf(b.id, 'reading')
+  );
+
+  // Optional: arrow keys to test on desktop
+  card.onkeydown = (e)=>{
+    if(e.key==='ArrowLeft')  markShelf(b.id,'want');
+    if(e.key==='ArrowRight') markShelf(b.id,'reading');
+  };
+  card.tabIndex = 0; // focusable for key events
 }
-function addSwipe(el,onLeft,onRight){
-  let startX=0,dx=0,drag=false; const like=el.querySelector('.badge-swipe.like'),nope=el.querySelector('.badge-swipe.nope');
-  const down=e=>{drag=true;startX=e.clientX??e.touches?.[0]?.clientX;el.style.transition='';};
-  const move=e=>{if(!drag)return; const x=e.clientX??e.touches?.[0]?.clientX; dx=x-startX; el.style.transform=`translateX(${dx}px) rotate(${dx/12}deg)`; const a=Math.min(1,Math.abs(dx)/120); if(dx>0){like.style.opacity=a;nope.style.opacity=0;} else{nope.style.opacity=a;like.style.opacity=0;}};
-  const snap=()=>{el.style.transition='transform .2s'; el.style.transform='translateX(0) rotate(0)'; like.style.opacity=0; nope.style.opacity=0;};
-  const up=()=>{if(!drag)return; drag=false; if(dx>80){el.style.transition='transform .2s'; el.style.transform='translateX(500px) rotate(15deg)'; setTimeout(onRight,160);} else if(dx<-80){el.style.transition='transform .2s'; el.style.transform='translateX(-500px) rotate(-15deg)'; setTimeout(onLeft,160);} else snap();};
-  el.addEventListener('pointerdown',down); el.addEventListener('pointermove',move); el.addEventListener('pointerup',up); el.addEventListener('pointercancel',up);
+
+function addSwipe(el, onLeft, onRight){
+  let startX = 0, dx = 0, dragging = false;
+  const like = el.querySelector('.badge-swipe.like');
+  const nope = el.querySelector('.badge-swipe.nope');
+  const THRESH = 80;
+
+  const down = (e)=>{
+    dragging = true;
+    startX = e.clientX ?? e.touches?.[0]?.clientX;
+    el.style.transition = '';
+  };
+  const move = (e)=>{
+    if (!dragging) return;
+    const x = e.clientX ?? e.touches?.[0]?.clientX;
+    dx = x - startX;
+    const rot = dx / 12;
+    el.style.transform = `translateX(${dx}px) rotate(${rot}deg)`;
+    const a = Math.min(1, Math.abs(dx)/120);
+    if (dx > 0){ if(like) like.style.opacity = a; if(nope) nope.style.opacity = 0; }
+    else       { if(nope) nope.style.opacity = a; if(like) like.style.opacity = 0; }
+  };
+  const snap = ()=>{
+    el.style.transition = 'transform .2s ease';
+    el.style.transform  = 'translateX(0) rotate(0)';
+    if (like) like.style.opacity = 0;
+    if (nope) nope.style.opacity = 0;
+  };
+  const up = ()=>{
+    if (!dragging) return;
+    dragging = false;
+    if (dx >  THRESH){ el.style.transition='transform .2s'; el.style.transform='translateX(520px) rotate(14deg)'; setTimeout(onRight, 160); }
+    else if (dx < -THRESH){ el.style.transition='transform .2s'; el.style.transform='translateX(-520px) rotate(-14deg)'; setTimeout(onLeft, 160); }
+    else snap();
+  };
+
+  // Pointer events work on touch + mouse (iPad friendly)
+  el.addEventListener('pointerdown', down, {passive:true});
+  el.addEventListener('pointermove', move,  {passive:true});
+  el.addEventListener('pointerup',   up);
+  el.addEventListener('pointercancel', up);
 }
+</script>
 
 /*************** Shelf ***************/
 function renderShelf(){
