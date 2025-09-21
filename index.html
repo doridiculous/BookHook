@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Your Emotional Match</title>
+<title>BookHoo</title>
 
 <!-- ===== Base Styles (shared) ===== -->
 <style>
@@ -518,7 +518,7 @@ function renderShelf(){
       </div>`;
   }).join('');
 }
-
+<script>
 /*************** HookMarks ***************/
 function startHookmark(id){ const b=BOOKS.find(x=>x.id===id); if(!b) return; state.activeBook=b; $('#hmTitle').textContent=`Add HookMark — ${b.title}`; $('#hmNote').value=''; ['hmLol','hmAha','hmBrk'].forEach(k=>document.getElementById(k).checked=false); $('#hmModal').classList.add('show'); }
 function closeHM(){ $('#hmModal').classList.remove('show'); state.hm_before=null; state.hm_after=null; }
