@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>BookHoo</title>
+<title>BookHook</title>
 
 <!-- ===== Base Styles (shared) ===== -->
 <style>
@@ -45,10 +45,13 @@ h1,h2{margin:0 0 10px} .muted{color:var(--muted);font-size:14px}
 .nav{display:flex;gap:8px;flex-wrap:wrap}
 
 /* ===== Component: Hero (logo + name) ===== */
-.hero{display:flex;flex-direction:column;align-items:center;gap:8px;padding:22px 12px}
-.logo{height:56px}
-.logo-text{font-weight:800;text-align:center}
-
+<!-- Simple black book with a hook -->
+<svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="56" height="56" aria-label="Book logo with hook">
+  <!-- Book shape -->
+  <path d="M10 12h20v40H10a4 4 0 0 1-4-4V16a4 4 0 0 1 4-4zM34 12h20a4 4 0 0 1 4 4v32a4 4 0 0 1-4 4H34V12z" fill="#000"/>
+  <!-- Hook (arrow / continuation symbol) -->
+  <path d="M44 28l8 8-8 8" stroke="#000" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
 /* ===== Component: Discover (swipe) ===== */
 /* === Discover card: compact, modern === */
 .swipe{display:grid;grid-template-columns:190px 1fr;gap:16px}
