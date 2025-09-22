@@ -350,32 +350,91 @@ function renderCarousel(){
 }
 
 /* Smooth, fast swipe */
-function addSwipe(el,onLeft,onRight){
-  let startX=0,dx=0,drag=false;
-  const like=el.querySelector('.badge-swipe.like');
-  const nope=el.querySelector('.badge-swipe.nope');
-  const THRESH=80;
+<script>
+function addSwipe(el, onLeft, onRight){
+  // Tunables
+  const THRESH_DIST = 60;     // pixels (was 80)
+  const THRESH_VELO = 0.6;    // px/ms   quick flick threshold
+  const ROT_FACTOR  = 15;     // deg per px of drag
+  const FLY_MS      = 220;    // ms fly-out duration
 
-  const down=e=>{ drag=true; startX=(e.touches?e.touches[0].clientX:e.clientX)||0; el.style.transition=''; };
-  const move=e=>{
-    if(!drag) return;
-    const x=(e.touches?e.touches[0].clientX:e.clientX)||0; dx=x-startX;
-    el.style.transform=`translateX(${dx}px) rotate(${dx/12}deg)`;
-    const a=Math.min(1,Math.abs(dx)/120);
-    if(dx>0){ like.style.opacity=a; nope.style.opacity=0; } else { nope.style.opacity=a; like.style.opacity=0; }
+  let downX=0, downY=0, dx=0, dy=0, dragging=false;
+  let lastX=0, lastT=0, vx=0;
+  const like = el.querySelector('.badge-swipe.like');
+  const nope = el.querySelector('.badge-swipe.nope');
+
+  // smooth transforms via RAF
+  let raf = 0;
+  const apply = () => {
+    el.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx/ROT_FACTOR}deg)`;
+    const a = Math.min(1, Math.abs(dx)/120);
+    if (dx > 0) { like.style.opacity = a; nope.style.opacity = 0; }
+    else        { nope.style.opacity = a; like.style.opacity = 0; }
+    raf = 0;
   };
-  const up=()=>{
-    if(!drag) return; drag=false;
-    if(dx>THRESH){ el.style.transition='transform .2s'; el.style.transform='translateX(500px) rotate(12deg)'; setTimeout(onRight,150); }
-    else if(dx<-THRESH){ el.style.transition='transform .2s'; el.style.transform='translateX(-500px) rotate(-12deg)'; setTimeout(onLeft,150); }
-    else{ el.style.transition='transform .18s'; el.style.transform='translateX(0) rotate(0)'; like.style.opacity=0; nope.style.opacity=0; }
+  const update = () => { if (!raf) raf = requestAnimationFrame(apply); };
+
+  const down = (e) => {
+    dragging = true;
+    el.style.transition = '';
+    const p = e.touches ? e.touches[0] : e;
+    downX = lastX = p.clientX; downY = p.clientY;
+    dx = dy = 0; lastT = performance.now();
   };
 
-  el.addEventListener('pointerdown',down,{passive:true});
-  el.addEventListener('pointermove',move,{passive:true});
-  el.addEventListener('pointerup',up,{passive:true});
-  el.addEventListener('pointercancel',up,{passive:true});
+  const move = (e) => {
+    if (!dragging) return;
+    const p = e.touches ? e.touches[0] : e;
+    const t = performance.now();
+    dx = p.clientX - downX;
+    dy = p.clientY - downY;
+
+    // compute instantaneous horizontal velocity (px/ms)
+    const dt = Math.max(1, t - lastT);
+    vx = (p.clientX - lastX) / dt;
+    lastX = p.clientX; lastT = t;
+
+    update();
+  };
+
+  const flyOut = (dirRight) => {
+    el.style.transition = `transform ${FLY_MS}ms ease-out`;
+    const x = dirRight ? window.innerWidth : -window.innerWidth;
+    el.style.transform = `translate(${x}px, -40px) rotate(${dirRight?20:-20}deg)`;
+    setTimeout(dirRight ? onRight : onLeft, FLY_MS - 40);
+    like.style.opacity = 0; nope.style.opacity = 0;
+  };
+
+  const snap = () => {
+    el.style.transition = 'transform 180ms ease';
+    el.style.transform  = 'translate(0,0) rotate(0)';
+    like.style.opacity = 0; nope.style.opacity = 0;
+  };
+
+  const up = () => {
+    if (!dragging) return;
+    dragging = false;
+
+    const fastFlick = Math.abs(vx) > THRESH_VELO;
+    const farDrag   = Math.abs(dx) > THRESH_DIST;
+
+    if (fastFlick || farDrag) {
+      flyOut(dx > 0); // right = reading (save), left = want
+    } else {
+      snap();
+    }
+  };
+
+  // Pointer/touch listeners (keep passive; we allow page vertical scroll)
+  el.addEventListener('pointerdown', down,  {passive:true});
+  el.addEventListener('pointermove', move,  {passive:true});
+  el.addEventListener('pointerup',   up,    {passive:true});
+  el.addEventListener('pointercancel', up,  {passive:true});
+  el.addEventListener('touchstart',  down,  {passive:true});
+  el.addEventListener('touchmove',   move,  {passive:true});
+  el.addEventListener('touchend',    up,    {passive:true});
 }
+</script>
 
 /* ================= Shelf mini list ================= */
 function markShelf(id,status){
