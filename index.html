@@ -67,6 +67,17 @@ h1,h2{margin:0 0 10px}
 .badge-swipe.like{left:10px;color:#0a6a0a;border-color:#0a6a0a}
 .badge-swipe.nope{right:10px;color:#cc1b1b;border-color:#cc1b1b}
 
+  /* --- Swipe perf hints --- */
+.card-gesture{
+  will-change: transform;
+  touch-action: pan-y;           /* keep vertical page scroll */
+  user-select: none;
+  contain: layout paint;         /* isolate for cheaper paints */
+  backface-visibility: hidden;   /* avoid blurring on iOS */
+  transform: translateZ(0);      /* force GPU layer */
+}
+.badge-swipe{ pointer-events:none; }  /* don’t intercept drags */
+.cover img{ pointer-events:none; -webkit-user-drag:none; } /* stop image drag ghost */
  /* speed help */
 .card-gesture{
   will-change: transform;
@@ -373,6 +384,78 @@ function renderShelf(){
     </div>`).join('');
 }
 
+  <script>
+function addSwipe(el, onLeft, onRight) {
+  let startX = 0, startY = 0, dx = 0, dy = 0, drag = false;
+  let like = el.querySelector('.badge-swipe.like'),
+      nope = el.querySelector('.badge-swipe.nope');
+
+  // Pointer down
+  const down = (e) => {
+    drag = true;
+    startX = e.clientX ?? e.touches?.[0]?.clientX;
+    startY = e.clientY ?? e.touches?.[0]?.clientY;
+    dx = dy = 0;
+    el.style.transition = '';
+  };
+
+  // Pointer move
+  const move = (e) => {
+    if (!drag) return;
+    const x = e.clientX ?? e.touches?.[0]?.clientX;
+    const y = e.clientY ?? e.touches?.[0]?.clientY;
+    dx = x - startX;
+    dy = y - startY;
+
+    // translate + rotate
+    el.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx/15}deg)`;
+
+    // Show label
+    const a = Math.min(1, Math.abs(dx) / 100);
+    if (dx > 0) {
+      like.style.opacity = a; nope.style.opacity = 0;
+    } else {
+      nope.style.opacity = a; like.style.opacity = 0;
+    }
+  };
+
+  // Reset / snap back
+  const snap = () => {
+    el.style.transition = 'transform .25s ease';
+    el.style.transform = 'translate(0,0) rotate(0)';
+    like.style.opacity = 0;
+    nope.style.opacity = 0;
+  };
+
+  // Pointer up
+  const up = () => {
+    if (!drag) return;
+    drag = false;
+
+    // velocity-sensitive swipe
+    if (dx > 120) {
+      el.style.transition = 'transform .3s ease-out';
+      el.style.transform = 'translate(100vw, -40px) rotate(20deg)';
+      setTimeout(onRight, 200);
+    } else if (dx < -120) {
+      el.style.transition = 'transform .3s ease-out';
+      el.style.transform = 'translate(-100vw, -40px) rotate(-20deg)';
+      setTimeout(onLeft, 200);
+    } else {
+      snap();
+    }
+  };
+
+  // Bind events
+  el.addEventListener('pointerdown', down);
+  el.addEventListener('pointermove', move);
+  el.addEventListener('pointerup', up);
+  el.addEventListener('pointercancel', up);
+  el.addEventListener('touchstart', down);
+  el.addEventListener('touchmove', move);
+  el.addEventListener('touchend', up);
+}
+</script>
 /* boot */
 document.addEventListener('DOMContentLoaded', async ()=>{
   $('#pts').textContent = state.pts + ' pts';
