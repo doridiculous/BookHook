@@ -457,45 +457,54 @@ function show(idx){
 }
 
 function addSwipe(el, onLeft, onRight){
-  let startX = 0, dx = 0, dragging = false;
+  let startX=0, dx=0, dragging=false, pid=null;
   const like = el.querySelector('.badge-swipe.like');
   const nope = el.querySelector('.badge-swipe.nope');
   const THRESH = 80;
 
   const down = (e)=>{
     dragging = true;
-    startX = e.clientX ?? e.touches?.[0]?.clientX;
+    pid = e.pointerId ?? null;
+    startX = (e.clientX ?? (e.touches && e.touches[0]?.clientX) ?? 0);
     el.style.transition = '';
+    try{ if(pid!=null) el.setPointerCapture(pid); }catch{}
   };
+
   const move = (e)=>{
-    if (!dragging) return;
-    const x = e.clientX ?? e.touches?.[0]?.clientX;
+    if(!dragging) return;
+    // prevent page scroll while swiping (iPad Safari)
+    if(e.cancelable) e.preventDefault();
+
+    const x = (e.clientX ?? (e.touches && e.touches[0]?.clientX) ?? startX);
     dx = x - startX;
-    const rot = dx / 12;
+    const rot = dx/14;
     el.style.transform = `translateX(${dx}px) rotate(${rot}deg)`;
+
     const a = Math.min(1, Math.abs(dx)/120);
-    if (dx > 0){ if(like) like.style.opacity = a; if(nope) nope.style.opacity = 0; }
-    else       { if(nope) nope.style.opacity = a; if(like) like.style.opacity = 0; }
+    if(dx>0){ if(like) like.style.opacity = a; if(nope) nope.style.opacity = 0; }
+    else    { if(nope) nope.style.opacity = a; if(like) like.style.opacity = 0; }
   };
+
   const snap = ()=>{
     el.style.transition = 'transform .2s ease';
-    el.style.transform  = 'translateX(0) rotate(0)';
-    if (like) like.style.opacity = 0;
-    if (nope) nope.style.opacity = 0;
+    el.style.transform = 'translateX(0) rotate(0)';
+    if(like) like.style.opacity = 0;
+    if(nope) nope.style.opacity = 0;
   };
+
   const up = ()=>{
-    if (!dragging) return;
+    if(!dragging) return;
     dragging = false;
-    if (dx >  THRESH){ el.style.transition='transform .2s'; el.style.transform='translateX(520px) rotate(14deg)'; setTimeout(onRight, 160); }
-    else if (dx < -THRESH){ el.style.transition='transform .2s'; el.style.transform='translateX(-520px) rotate(-14deg)'; setTimeout(onLeft, 160); }
+    try{ if(pid!=null) el.releasePointerCapture(pid); }catch{}
+    if(dx >  THRESH){ el.style.transition='transform .2s'; el.style.transform='translateX(500px) rotate(12deg)'; setTimeout(onRight,160); }
+    else if(dx < -THRESH){ el.style.transition='transform .2s'; el.style.transform='translateX(-500px) rotate(-12deg)'; setTimeout(onLeft,160); }
     else snap();
   };
 
-  // Pointer events work on touch + mouse (iPad friendly)
-  el.addEventListener('pointerdown', down, {passive:true});
-  el.addEventListener('pointermove', move,  {passive:true});
-  el.addEventListener('pointerup',   up);
-  el.addEventListener('pointercancel', up);
+  el.addEventListener('pointerdown', down, {passive:false});
+  el.addEventListener('pointermove', move, {passive:false});
+  el.addEventListener('pointerup',    up,   {passive:true});
+  el.addEventListener('pointercancel',up,   {passive:true});
 }
 /*************** Shelf ***************/
 function renderShelf(){
