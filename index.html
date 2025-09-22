@@ -149,12 +149,20 @@ h1,h2{margin:0 0 10px}
   </section>
 
   <!-- Discover -->
-  <section class="card" id="discover">
-    <h2>Discover</h2>
-    <div class="muted" style="margin:-4px 0 10px">Swipe left = Want · Swipe right = Reading · Tap “Already read” to add HookMarks</div>
-    <div id="carousel" class="carousel" aria-label="Swipeable books"></div>
-  </section>
-
+  <div class="hintbar" role="note" aria-label="Swipe help">
+  <span class="hint-pill">← Want</span>
+  <span class="hint-pill">→ Reading</span>
+  <span class="hint-pill">✓ Already read → add HookMarks</span>
+</div>
+.hintbar{
+  display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+  margin:-4px 0 10px;
+}
+.hint-pill{
+  padding:6px 10px;border-radius:999px;
+  border:1px solid var(--line); background:#fff;
+  font-weight:600; font-size:12px; color:#444;
+}
   <!-- Your Shelf -->
   <section class="card" id="shelf">
     <h2>Your Shelf</h2>
@@ -214,18 +222,47 @@ const MOOD_MAP = {
 
 /* --- sample books (covers auto-fetched if not provided) --- */
 const BOOKS = [
-  {id:"rid", title:"The Ridiculous: Book 1", author:"Jef & Mindy",
-   vibes:["Funny","Satirical","Empowering","Chill","Feel-good"],
-   facts:{pace:"Medium", pages:312, year:2024}, gold:true, links:{site:"#", buy:"#"}},
-  {id:"mag", title:"Magical Adventures of Lori & Bonnie B. Bunny", author:"Elaine Blackstien",
-   vibes:["Inspiring","Playful","Comedic","Uplifting","Fast"],
-   facts:{pace:"Fast", pages:248, year:2025}, links:{buy:"#"}},
-  {id:"hab", title:"Atomic Habits of the Heart", author:"A. North",
-   vibes:["Focused","Grounded","Practical","Motivated","Calm"],
-   facts:{pace:"Fast", pages:280, year:2019}, links:{buy:"#"}},
-  {id:"coz", title:"Star Soup & Cozy Skies", author:"L. Nova",
-   vibes:["Calm","Cozy","Comforted","Reflective"],
-   facts:{pace:"Slow", pages:220, year:2021}, links:{buy:"#"}}
+  // — Keep your two first-party titles —
+  { id:"rid", title:"The Ridiculous: Book 1", author:"Jef & Mindy",
+    vibes:["Funny","Satirical","Empowering","Chill","Feel-good"],
+    facts:{pace:"Medium", pages:312, year:2024}, gold:true, links:{site:"#", buy:"#"} },
+
+  { id:"mag", title:"Magical Adventures of Lori & Bonnie B. Bunny", author:"Elaine Blackstien",
+    vibes:["Inspiring","Playful","Comedic","Uplifting","Fast"],
+    facts:{pace:"Fast", pages:248, year:2025}, links:{buy:"#"} },
+
+  // — Popular, high-likelihood covers from Google Books —
+  { id:"phm", title:"Project Hail Mary", author:"Andy Weir",
+    vibes:["Adventurous","Ingenious","Page-turner","Uplifting"],
+    facts:{pace:"Fast", pages:496, year:2021} },
+
+  { id:"mart", title:"The Martian", author:"Andy Weir",
+    vibes:["Funny","Ingenious","Survival","Hopeful"],
+    facts:{pace:"Fast", pages:387, year:2014} },
+
+  { id:"alc", title:"The Alchemist", author:"Paulo Coelho",
+    vibes:["Reflective","Spiritual","Inspiring","Uplifting"],
+    facts:{pace:"Medium", pages:208, year:1988} },
+
+  { id:"power", title:"The Power of Now", author:"Eckhart Tolle",
+    vibes:["Calm","Mindful","Grounding","Insightful"],
+    facts:{pace:"Slow", pages:236, year:1997} },
+
+  { id:"edu", title:"Educated", author:"Tara Westover",
+    vibes:["Powerful","Moving","Reflective","Transformative"],
+    facts:{pace:"Medium", pages:352, year:2018} },
+
+  { id:"becoming", title:"Becoming", author:"Michelle Obama",
+    vibes:["Inspiring","Warm","Reflective","Personal"],
+    facts:{pace:"Medium", pages:448, year:2018} },
+
+  { id:"crawdads", title:"Where the Crawdads Sing", author:"Delia Owens",
+    vibes:["Evocative","Romantic","Mysterious","Immersive"],
+    facts:{pace:"Medium", pages:384, year:2018} },
+
+  { id:"nowhab", title:"Atomic Habits", author:"James Clear",
+    vibes:["Practical","Motivating","Focused","Productive"],
+    facts:{pace:"Fast", pages:320, year:2018} }
 ];
 
 /* --- helpers --- */
@@ -261,19 +298,24 @@ function toggleDesired(n){ state.desired.has(n)?state.desired.delete(n):state.de
 
 /* --- cover fetch (Google Books) --- */
 async function prefetchCovers(){
+  const tryGoogle = async (b)=>{
+    const q = encodeURIComponent(`intitle:${b.title} inauthor:${b.author}`);
+    const r = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1`);
+    if(!r.ok) return null;
+    const d = await r.json();
+    const img = d?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail
+             || d?.items?.[0]?.volumeInfo?.imageLinks?.smallThumbnail;
+    return img ? img.replace('http://','https://') : null;
+  };
+
   await Promise.all(BOOKS.map(async b=>{
-    if(b.image){ b._hasImg=true; return; }
-    try{
-      const q=encodeURIComponent(`intitle:${b.title} inauthor:${b.author}`);
-      const r=await fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1`);
-      if(r.ok){
-        const d=await r.json();
-        const img=d?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail
-               || d?.items?.[0]?.volumeInfo?.imageLinks?.smallThumbnail;
-        if(img){ b.image=img.replace('http://','https://'); b._hasImg=true; }
-      }
-    }catch(e){}
-    if(!b.image) b._skip=true; /* hide if no cover */
+    if (b.image) return; // already set
+    try {
+      const gimg = await tryGoogle(b);
+      if (gimg){ b.image = gimg; return; }
+    } catch(e){ /* ignore */ }
+    // No image found → keep item, we’ll show a clean placeholder letter instead of skipping it
+    b.image = null;
   }));
 }
 
@@ -287,7 +329,7 @@ function score(b){
   return s;
 }
 function refreshMatches(){
-  const pool = BOOKS.filter(b=>!b._skip);
+  const pool = BOOKS; // show all; if image missing we show a clean placeholder
   state.order = [...pool].sort((a,b)=>score(b)-score(a));
   renderCarousel();
 }
@@ -455,7 +497,6 @@ function addSwipe(el, onLeft, onRight) {
   el.addEventListener('touchmove', move);
   el.addEventListener('touchend', up);
 }
-</script>
 /* boot */
 document.addEventListener('DOMContentLoaded', async ()=>{
   $('#pts').textContent = state.pts + ' pts';
