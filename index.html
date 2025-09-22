@@ -84,7 +84,16 @@ h1,h2{margin:0 0 10px}
 .badge-swipe{position:absolute;top:10px;padding:6px 10px;border-radius:8px;font-weight:700;border:2px solid;background:rgba(255,255,255,.9);opacity:0;transition:opacity .12s;pointer-events:none}
 .badge-swipe.like{left:10px;color:#0a6a0a;border-color:#0a6a0a}
 .badge-swipe.nope{right:10px;color:#cc1b1b;border-color:#cc1b1b}
+<div id="carousel" class="carousel"></div>
 
+<!-- Browse-only edge zones -->
+<div class="navZone left"  onclick="prevCard()"  aria-label="Previous"></div>
+<div class="navZone right" onclick="nextCard()"  aria-label="Next"></div>
+
+<!-- Optional little arrows (purely visual) -->
+<div class="navHint left">‹</div>
+<div class="navHint right">›</div>
+  
 /* Shelf mini list */
 .list{display:flex;flex-direction:column;gap:10px}
 .tile{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:12px;background:#fff}
