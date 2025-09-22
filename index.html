@@ -7,6 +7,14 @@
 
 <!-- ===== Base styles ===== -->
 <style>
+  /* Swipe instructions (“pills”) */
+.hintbar{
+  display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:-4px 0 10px;
+}
+.hint-pill{
+  padding:6px 10px; border-radius:999px; border:1px solid var(--line);
+  background:#fff; font-weight:600; font-size:12px; color:#444;
+}
 :root{
   --bg:#f7f7f8; --fg:#111; --muted:#6b7280;
   --card:#fff; --line:#e5e7eb; --pill:#f5f5f5;
@@ -149,20 +157,17 @@ h1,h2{margin:0 0 10px}
   </section>
 
   <!-- Discover -->
-  <div class="hintbar" role="note" aria-label="Swipe help">
-  <span class="hint-pill">← Want</span>
-  <span class="hint-pill">→ Reading</span>
-  <span class="hint-pill">✓ Already read → add HookMarks</span>
-</div>
-.hintbar{
-  display:flex;gap:8px;flex-wrap:wrap;align-items:center;
-  margin:-4px 0 10px;
-}
-.hint-pill{
-  padding:6px 10px;border-radius:999px;
-  border:1px solid var(--line); background:#fff;
-  font-weight:600; font-size:12px; color:#444;
-}
+<section class="card" id="discoverSection">
+  <h2>Discover</h2>
+
+  <div class="hintbar">
+    <span class="hint-pill">Swipe left → Want</span>
+    <span class="hint-pill">Swipe right → Reading</span>
+    <span class="hint-pill">Tap “Already read” to add HookMarks</span>
+  </div>
+
+  <div id="swipe" class="swipe"></div>
+</section>
   <!-- Your Shelf -->
   <section class="card" id="shelf">
     <h2>Your Shelf</h2>
