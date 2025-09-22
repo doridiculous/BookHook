@@ -440,7 +440,7 @@ function show(idx){
                          ()=>markShelf(b.id,'reading'));
 }
 </script>
-
+<script>
   // Bind swipe every render
   const card = document.getElementById('card');
   addSwipe(card, 
@@ -506,6 +506,7 @@ function addSwipe(el, onLeft, onRight){
   el.addEventListener('pointerup',    up,   {passive:true});
   el.addEventListener('pointercancel',up,   {passive:true});
 }
+</shelf>
 /*************** Shelf ***************/
 function renderShelf(){
   const box = document.getElementById('shelfList');
