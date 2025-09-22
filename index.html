@@ -53,11 +53,28 @@ h1,h2{margin:0 0 10px}
 .chips{display:flex;gap:8px;margin:6px 0 10px;align-items:center;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
 .chip{display:inline-flex;white-space:nowrap;padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fafafa;font-size:13px}
+  /* === Swipe performance tune-ups === */
+.card-gesture{
+  will-change: transform;
+  touch-action: pan-y;   /* still allows vertical scroll */
+  user-select: none;
+}
+.badge-swipe{
+  pointer-events: none;  /* don’t block drags */
+}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .badge-swipe{position:absolute;top:10px;padding:6px 10px;border-radius:8px;font-weight:700;border:2px solid;background:rgba(255,255,255,.9);opacity:0;transition:opacity .12s}
 .badge-swipe.like{left:10px;color:#0a6a0a;border-color:#0a6a0a}
 .badge-swipe.nope{right:10px;color:#cc1b1b;border-color:#cc1b1b}
 
+ /* speed help */
+.card-gesture{
+  will-change: transform;
+  touch-action: pan-y;      /* let vertical page scroll, we handle X */
+  user-select: none;
+}
+.badge-swipe{ pointer-events:none; } /* badges never block touches */ 
+  
 /* ===== Shelf mini list ===== */
 .list{display:flex;flex-direction:column;gap:10px}
 .tile{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:12px;background:#fff}
