@@ -1,34 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BookHook</title>
+
+<!-- ===== Base styles ===== -->
+<style>
+:root{
+  --bg:#f7f7f8; --fg:#111; --muted:#6b7280;
+  --card:#fff; --line:#e5e7eb; --pill:#f5f5f5;
+  --gold:#E7C200;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+  font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:18px 14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0;box-shadow:0 1px 8px rgba(0,0,0,.04)}
+h1,h2{margin:0 0 10px}
+.muted{color:var(--muted);font-size:14px}
+.btn{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:600}
+.btn.small{font-size:12px;padding:6px 10px}
+.badge{padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:600;font-size:12px}
+.badge.gold{background:#fff7cc;border-color:var(--gold)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+.field{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;font:inherit}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:var(--pill);cursor:pointer}
+.pill.on{background:#111;color:#fff;border-color:#111}
+
+/* ===== Top nav (centered) ===== */
+.topbar{position:sticky;top:0;z-index:3;background:#fff;border-bottom:1px solid var(--line)}
+.topbar .nav{display:flex;justify-content:center;gap:10px;padding:10px 0;flex-wrap:wrap}
+.topbar .status{position:absolute;right:14px;top:10px}
+
+/* ===== Hero (centered logo) ===== */
+.hero{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 12px}
+.logo{height:56px}
+.logoText{font-weight:800}
+
+/* ===== Discover: carousel + card ===== */
+.carousel{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px}
+.carousel::-webkit-scrollbar{display:none}
+.card-gesture{min-width:680px;max-width:680px;scroll-snap-align:center;
+  display:grid;grid-template-columns:190px 1fr;gap:16px;
+  background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,.06);
+  position:relative;touch-action:pan-y;user-select:none;will-change:transform}
+@media (max-width:760px){.card-gesture{min-width:92vw;grid-template-columns:1fr}}
+.cover{width:100%;aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:#e9eef3;display:flex;align-items:center;justify-content:center}
+.cover img{width:100%;height:100%;object-fit:cover;display:block}
+.title{margin:6px 0 4px;font-size:22px;line-height:1.25;font-weight:800}
+.chips{display:flex;gap:8px;margin:6px 0 10px;align-items:center;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{display:inline-flex;white-space:nowrap;padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fafafa;font-size:13px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.badge-swipe{position:absolute;top:10px;padding:6px 10px;border-radius:8px;font-weight:700;border:2px solid;background:rgba(255,255,255,.9);opacity:0;transition:opacity .12s}
+.badge-swipe.like{left:10px;color:#0a6a0a;border-color:#0a6a0a}
+.badge-swipe.nope{right:10px;color:#cc1b1b;border-color:#cc1b1b}
+
+/* ===== Shelf mini list ===== */
+.list{display:flex;flex-direction:column;gap:10px}
+.tile{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.thumb{width:64px;height:96px;border-radius:8px;background:#eee;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.stat{padding:4px 8px;border-radius:999px;border:1px solid var(--line);background:#f6f6f6;font-size:12px}
+.stat.want{background:#eef3ff;border-color:#cfe1ff}
+.stat.reading{background:#eaf8ed;border-color:#b8e4c3}
+.stat.read{background:#fff0d2;border-color:#f7dc8a}
+</style>
+</head>
+
+<body>
+<div class="topbar">
+  <div class="nav">
+    <button class="btn small" onclick="scrollToId('discover')">Discover</button>
+    <button class="btn small" onclick="scrollToId('hookmarks')">HookMarks</button>
+    <button class="btn small" onclick="scrollToId('profile')">My Profile</button>
+    <button class="btn small" onclick="scrollToId('boards')">Leaderboards</button>
+  </div>
+  <div class="status"><span class="badge">Bronze</span> <span id="pts" class="badge gold">0 pts</span></div>
+</div>
+
+<main class="wrap">
+  <!-- Hero -->
+  <section class="hero">
+    <!-- simple black book + hook icon (no text baked in) -->
+    <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 32" aria-label="BookHook">
+      <!-- book -->
+      <path d="M4 4h26a6 6 0 0 1 6 6v16H10a6 6 0 0 1-6-6V4Z" fill="#000"/>
+      <path d="M34 4h26v16a6 6 0 0 1-6 6H28V10a6 6 0 0 1 6-6Z" fill="#000" opacity=".9"/>
+      <!-- hook -->
+      <path d="M44 8l6 8-6 8" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="logoText">BookHook</div>
+  </section>
+
+  <!-- Feeling -->
+  <section class="card">
+    <h2>How I'm feeling</h2>
+    <div class="row">
+      <input id="moodFree" class="field" placeholder="Type how you feel… (e.g. anxious, excited, pumped)" />
+      <button id="setMoodFree" class="btn small">Set</button>
+    </div>
+    <div class="row">
+      <div class="pills">
+        <button class="pill" onclick="setLevel('Low')">Low</button>
+        <button class="pill" onclick="setLevel('Medium')">Medium</button>
+        <button class="pill" onclick="setLevel('High')">High</button>
+      </div>
+    </div>
+    <div class="muted">Your vibe nudges the matches below.</div>
+  </section>
+
+  <!-- Desired Mood (grouped + Entrepreneurial) -->
+  <section class="card" id="desired">
+    <h2>Desired Mood</h2>
+    <div id="desiredTabs" class="row"></div>
+    <div id="desiredPills" class="pills"></div>
+    <div class="muted">Choose a few — these steer the match score below.</div>
+  </section>
+
+  <!-- Discover -->
+  <section class="card" id="discover">
+    <h2>Discover</h2>
+    <div class="muted" style="margin:-4px 0 10px">Swipe left = Want · Swipe right = Reading · Tap “Already read” to add HookMarks</div>
+    <div id="carousel" class="carousel" aria-label="Swipeable books"></div>
+  </section>
+
+  <!-- Your Shelf -->
+  <section class="card" id="shelf">
+    <h2>Your Shelf</h2>
+    <div class="muted">Save or swipe to add books. Full shelf appears in My Profile.</div>
+    <div id="shelfList" class="list"></div>
+  </section>
+
+  <!-- HookMarks (placeholder shell, unchanged for brevity) -->
+  <section class="card" id="hookmarks">
+    <h2>HookMarks</h2>
+    <div class="muted">Add when you mark “Already read”.</div>
+  </section>
+
+  <!-- Profile -->
+  <section class="card" id="profile">
+    <h2>My Profile</h2>
+    <div class="row"><span class="badge">Role</span>
+      <label class="pill"><input type="checkbox" id="isReader" checked /> Reader</label>
+      <label class="pill"><input type="checkbox" id="isAuthor" /> Author</label>
+    </div>
+    <div class="row"><span class="badge">Points</span> <b id="profilePts">0</b></div>
+  </section>
+
+  <!-- Boards -->
+  <section class="card" id="boards">
+    <h2>Leaderboards</h2>
+    <div class="muted">Coming next.</div>
+  </section>
+</main>
+
+<!-- ===== Logic ===== -->
+<script>
+/* --- state --- */
+const state = {
+  moodNowLevel:null,
+  desired:new Set(),
+  pts:Number(localStorage.getItem('bh_pts')||0),
+  shelf: JSON.parse(localStorage.getItem('bh_shelf')||"[]"),
+  order:[]
+};
+
+/* --- desired mood groups (incl. Entrepreneurial) --- */
+const MOOD_GROUPS = {
+  "Calm / Steady": ["Calm","Restful","Reflective","Grounding","Peaceful","Soothing"],
+  "Clarity": ["Clear-headed","Focused","Insightful","Mindset-shifting"],
+  "Drive": ["Motivated","Empowered","Productive","Entrepreneurial"],
+  "Spark / Fun": ["Playful","Silly","Comedic","Uplifting","Inspiring","Arousing"],
+  "Comfort & Care": ["Comforted","Self-loving","Grateful","Connected"]
+};
+let activeGroup = Object.keys(MOOD_GROUPS)[0];
+
+const MOOD_MAP = {
+  low:["sad","down","tired","drained","anxious","overwhelmed","lonely","stressed","meh"],
+  medium:["ok","fine","neutral","calm","grounded","chill","steady"],
+  high:["happy","joyful","excited","energized","pumped","hyped","curious","inspired","motivated"]
+};
+
+/* --- sample books (covers auto-fetched if not provided) --- */
+const BOOKS = [
+  {id:"rid", title:"The Ridiculous: Book 1", author:"Jef & Mindy",
+   vibes:["Funny","Satirical","Empowering","Chill","Feel-good"],
+   facts:{pace:"Medium", pages:312, year:2024}, gold:true, links:{site:"#", buy:"#"}},
+  {id:"mag", title:"Magical Adventures of Lori & Bonnie B. Bunny", author:"Elaine Blackstien",
+   vibes:["Inspiring","Playful","Comedic","Uplifting","Fast"],
+   facts:{pace:"Fast", pages:248, year:2025}, links:{buy:"#"}},
+  {id:"hab", title:"Atomic Habits of the Heart", author:"A. North",
+   vibes:["Focused","Grounded","Practical","Motivated","Calm"],
+   facts:{pace:"Fast", pages:280, year:2019}, links:{buy:"#"}},
+  {id:"coz", title:"Star Soup & Cozy Skies", author:"L. Nova",
+   vibes:["Calm","Cozy","Comforted","Reflective"],
+   facts:{pace:"Slow", pages:220, year:2021}, links:{buy:"#"}}
+];
+
+/* --- helpers --- */
+const $ = s => document.querySelector(s);
+function scrollToId(id){ document.getElementById(id)?.scrollIntoView({behavior:'smooth'}); }
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;","<": "&lt;",">":"&gt;","\"":"&quot;"}[m]) )}
+function addPts(n){ state.pts+=n; localStorage.setItem('bh_pts',state.pts); $('#pts').textContent=state.pts+' pts'; $('#profilePts').textContent=state.pts; }
+
+/* --- feeling --- */
+$('#setMoodFree').addEventListener('click',()=>mapFreeMood($('#moodFree').value));
+function setLevel(v){ state.moodNowLevel=v; refreshMatches(); }
+function mapFreeMood(text){
+  const t=(text||'').toLowerCase().trim(); if(!t) return;
+  const hit=a=>a.some(w=>t.includes(w));
+  if(hit(MOOD_MAP.high)) state.moodNowLevel='High';
+  else if(hit(MOOD_MAP.low)) state.moodNowLevel='Low';
+  else state.moodNowLevel='Medium';
+  refreshMatches();
+}
+
+/* --- desired mood UI --- */
+function renderDesiredTabs(){
+  $('#desiredTabs').innerHTML = Object.keys(MOOD_GROUPS).map(g =>
+    `<button class="pill ${g===activeGroup?'on':''}" onclick="setDesiredGroup('${g}')">${g}</button>`).join('');
+}
 function setDesiredGroup(g){ activeGroup=g; renderDesiredTabs(); renderDesiredPills(); refreshMatches(); }
 function renderDesiredPills(){
-  const items=impactSort(MOOD_GROUPS_BASE[activeGroup]);
-  $('#desiredPills').innerHTML = items.map(n=>`<button class="pill ${state.desired.has(n)?'on':''}" onclick="toggleDesired('${n}')">${n}</button>`).join('');
+  const items = MOOD_GROUPS[activeGroup];
+  $('#desiredPills').innerHTML = items.map(n =>
+    `<button class="pill ${state.desired.has(n)?'on':''}" onclick="toggleDesired('${n}')">${n}</button>`).join('');
 }
-function toggleDesired(n){ if(state.desired.has(n)) state.desired.delete(n); else state.desired.add(n); renderDesiredPills(); refreshMatches(); }
+function toggleDesired(n){ state.desired.has(n)?state.desired.delete(n):state.desired.add(n); renderDesiredPills(); refreshMatches(); }
 
-/* ---------- DISCOVER: scoring + chips + swipe ---------- */
+/* --- cover fetch (Google Books) --- */
+async function prefetchCovers(){
+  await Promise.all(BOOKS.map(async b=>{
+    if(b.image){ b._hasImg=true; return; }
+    try{
+      const q=encodeURIComponent(`intitle:${b.title} inauthor:${b.author}`);
+      const r=await fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1`);
+      if(r.ok){
+        const d=await r.json();
+        const img=d?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail
+               || d?.items?.[0]?.volumeInfo?.imageLinks?.smallThumbnail;
+        if(img){ b.image=img.replace('http://','https://'); b._hasImg=true; }
+      }
+    }catch(e){}
+    if(!b.image) b._skip=true; /* hide if no cover */
+  }));
+}
 
-const SHOW_PACE = false;          // set true if you want ⏱ pace shown
-const CHIP_MAX   = 6;             // how many chips before we show “+ more”
-
+/* --- matching + render --- */
 function score(b){
-  const inter = (arr,set)=>arr.filter(x=>set.has(x)).length;
-  let s = inter(b.vibes||[], state.desired) * 1.4;
-  if (state.moodNowLevel === 'Low')  s += 0.2;
-  if (state.moodNowLevel === 'High') s += 0.1;
-  if (b.gold) s += 2.5;
+  const inter=(arr,set)=>arr.filter(x=>set.has(x)).length;
+  let s = inter(b.vibes||[], state.desired)*1.4;
+  if(state.moodNowLevel==='Low') s += 0.2;
+  if(state.moodNowLevel==='High') s += 0.1;
+  if(b.gold) s += 2.5;
   return s;
 }
+function refreshMatches(){
+  const pool = BOOKS.filter(b=>!b._skip);
+  state.order = [...pool].sort((a,b)=>score(b)-score(a));
+  renderCarousel();
+}
 
-function pickChips(b){
-  const chips = [];
+/* --- carousel + per-card swipe --- */
+function renderCarousel(){
+  const box = $('#carousel'); if(!box) return;
+  box.innerHTML = state.order.map(b=>{
+    const chips = [
+      ...(b.vibes||[]),
+      b.facts?.pace,
+      b.facts?.pages?`${b.facts.pages}p`:null,
+      b.facts?.year?`Since ${b.facts.year}`:null
+    ].filter(Boolean);
+    const chipsHtml = chips.map(c=>`<span class="chip">${escapeHtml(c)}</span>`).join('');
+    return `
+      <article class="card-gesture" data-id="${b.id}">
+        <div class="cover">${b.image?`<img src="${b.image}" alt="Cover of ${escapeHtml(b.title)}">`:escapeHtml(b.title[0]||'?')}</div>
+        <div>
+          <div class="row" style="justify-content:space-between;align-items:center">
+            <div>${b.gold?'<span class="badge gold">Featured</span>':''}</div>
+            <div class="badge gold">${state.pts} pts</div>
+          </div>
+          <div class="title">${escapeHtml(b.title)}</div>
+          <div class="muted">by ${escapeHtml(b.author)}</div>
+          <div class="chips">${chipsHtml}</div>
+          <div class="actions">
+            <button class="btn" onclick="markShelf('${b.id}','want')">Want (+5)</button>
+            <button class="btn" onclick="markShelf('${b.id}','reading')">Reading (+7)</button>
+            <button class="btn" style="background:#fff7cc;border-color:#d6bb00" onclick="markShelf('${b.id}','read')">Already read</button>
+          </div>
+        </div>
+        <span class="badge-swipe like">SAVE</span>
+        <span class="badge-swipe nope">NOPE</span>
+      </article>`;
+  }).join('');
 
-  // Primary “feel” chips first (what users latch onto)
-  if (Array.isArray(b.vibes)) chips.push(...b.vibes);
+  // bind swipe to each card
+  box.querySelectorAll('.card-gesture').forEach(card=>{
+    const id = card.getAttribute('data-id');
+    addSwipe(card, ()=>markShelf(id,'want'), ()=>markShelf(id,'reading'));
+    // optional: arrow keys when focused (desktop)
+    card.tabIndex=0;
+    card.onkeydown = (e)=>{ if(e.key==='ArrowLeft') markShelf(id,'want'); if(e.key==='ArrowRight') markShelf(id,'reading'); };
+  });
+}
 
-  // Book facts (compact & readable)
-  if (SHOW_PACE && b?.facts?.pace)  chips.push(`⏱ ${b.facts.pace}`);
-  if (b?.facts?.pages)              chips.push(`📄 ${b.facts.pages}p`);
-  if (b?.facts?.year)               chips.push(`📅 since ${b.facts.year}`);
+/* swipe handler */
+function addSwipe(el,onLeft,onRight){
+  let startX=0,dx=0,drag=false;
+  const like=el.querySelector('.badge-swipe.like');
+  const nope=el.querySelector('.badge-swipe.nope');
+  const THRESH=80;
 
-  // Optional tags you’ve added to the book
-  i
+  const down=e=>{ drag=true; startX=(e.touches?e.touches[0].clientX:e.clientX)||0; el.style.transition=''; };
+  const move=e=>{
+    if(!drag) return;
+    const x=(e.touches?e.touches[0].clientX:e.clientX)||0; dx=x-startX;
+    el.style.transform=`translateX(${dx}px) rotate(${dx/12}deg)`;
+    const a=Math.min(1,Math.abs(dx)/120);
+    if(dx>0){ like.style.opacity=a; nope.style.opacity=0; } else { nope.style.opacity=a; like.style.opacity=0; }
+  };
+  const up=()=>{
+    if(!drag) return; drag=false;
+    if(dx>THRESH){ el.style.transition='transform .2s'; el.style.transform='translateX(500px) rotate(12deg)'; setTimeout(onRight,150); }
+    else if(dx<-THRESH){ el.style.transition='transform .2s'; el.style.transform='translateX(-500px) rotate(-12deg)'; setTimeout(onLeft,150); }
+    else{ el.style.transition='transform .18s'; el.style.transform='translateX(0) rotate(0)'; like.style.opacity=0; nope.style.opacity=0; }
+  };
+
+  el.addEventListener('pointerdown',down,{passive:true});
+  el.addEventListener('pointermove',move,{passive:true});
+  el.addEventListener('pointerup',up,{passive:true});
+  el.addEventListener('pointercancel',up,{passive:true});
+}
+
+/* shelf mini list */
+function markShelf(id,status){
+  const b=BOOKS.find(x=>x.id===id); if(!b) return;
+  const ex = state.shelf.find(x=>x.id===id);
+  if(ex){ ex.status=status; ex.image=b.image||ex.image; }
+  else { state.shelf.unshift({id:b.id,title:b.title,author:b.author,image:b.image,status}); }
+  localStorage.setItem('bh_shelf',JSON.stringify(state.shelf));
+  addPts(status==='want'?5:(status==='reading'?7:10));
+  renderShelf();
+}
+function renderShelf(){
+  const box=$('#shelfList'); if(!box) return;
+  if(!state.shelf.length){ box.innerHTML=''; return; }
+  box.innerHTML = state.shelf.map(b=>`
+    <div class="tile">
+      <div class="thumb">${b.image?`<img src="${b.image}" alt="">`:''}</div>
+      <div><div><b>${escapeHtml(b.title)}</b></div><div class="muted">by ${escapeHtml(b.author)}</div></div>
+      <div class="stat ${b.status}">${b.status}</div>
+    </div>`).join('');
+}
+
+/* boot */
+document.addEventListener('DOMContentLoaded', async ()=>{
+  $('#pts').textContent = state.pts + ' pts';
+  $('#profilePts').textContent = state.pts;
+  renderDesiredTabs(); renderDesiredPills();
+  await prefetchCovers();           // pulls real covers where possible
+  refreshMatches();                 // builds carousel
+  renderShelf();
+});
+</script>
+</body>
+</html>
