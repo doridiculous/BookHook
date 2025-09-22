@@ -382,40 +382,64 @@ function refreshMatches(){
   show(0);
 }
 
+<script>
+// R E P L A C E  your existing show(idx) with this:
 function show(idx){
-  const el = document.getElementById('swipe');
-  if (!state.order.length){ el.innerHTML = '<div class="muted">No books yet.</div>'; return; }
+  const host = document.getElementById('swipe');
+  if(!state.order.length){ host.innerHTML = '<div class="muted">No books yet.</div>'; return; }
 
   const b = state.order[idx % state.order.length];
 
-  const coverHTML = b.image
-    ? `<img src="${b.image}" alt="Cover of ${escapeHtml(b.title)}">`
-    : escapeHtml((b.title||'?').slice(0,1));
+  const rawChips = [
+    ...(b.vibes||[]),
+    b.facts?.pace,
+    b.facts?.pages ? `${b.facts.pages}p` : null,
+    b.facts?.year ? `Since ${b.facts.year}` : null
+  ].filter(Boolean);
 
-  const chipsHTML = pickChips(b).map(c => `<span class="chip">${escapeHtml(c)}</span>`).join('');
+  const max = 6;
+  const chipsHtml = rawChips
+    .slice(0, max).map(c=>`<span class="chip">${escapeHtml(c)}</span>`).join('') +
+    (rawChips.length > max ? `<span class="chip more">+ ${rawChips.length-max} more</span>` : '');
 
-  el.innerHTML = `
+  host.innerHTML = `
     <div id="card" class="card-gesture swipe">
-      <div class="cover">${coverHTML}</div>
+      <div class="cover">
+        ${b.image ? `<img src="${b.image}" alt="Cover of ${escapeHtml(b.title)}">`
+                  : escapeHtml(b.title[0] || '?')}
+      </div>
       <div>
-        <div class="titleWrap">
-          <h3 class="title">${escapeHtml(b.title)}</h3>
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <div>${b.gold ? '<span class="badge gold">Featured</span>' : ''}</div>
+          <div class="badge gold" id="ptsTop">${state.pts} pts</div>
         </div>
-        <div class="muted">by ${escapeHtml(b.author||'')}</div>
 
-        <div class="chips">${chipsHTML}</div>
+        <div class="titleWrap">
+          <h2 class="title">${escapeHtml(b.title)}</h2>
+        </div>
+        <div class="muted">by ${escapeHtml(b.author)}</div>
+
+        <div class="chips">${chipsHtml}</div>
 
         <div class="actions">
-          <button class="btn"        onclick="markShelf('${b.id}','want')">Want (+5)</button>
-          <button class="btn"        onclick="markShelf('${b.id}','reading')">Reading (+7)</button>
-          <button class="btn gold"   onclick="startHookmark('${b.id}')">Already read</button>
+          <button class="btn" onclick="markShelf('${b.id}','want')">Want (+5)</button>
+          <button class="btn" onclick="markShelf('${b.id}','reading')">Reading (+7)</button>
+          <button class="btn gold" onclick="startHookmark('${b.id}')">Already read</button>
         </div>
       </div>
 
+      <!-- swipe badges -->
       <span class="badge-swipe like">SAVE</span>
       <span class="badge-swipe nope">NOPE</span>
     </div>
   `;
+
+  // attach swipe AFTER the card exists
+  const card = document.getElementById('card');
+  if(card) addSwipe(card, ()=>markShelf(b.id,'want'),
+                         ()=>markShelf(b.id,'reading'));
+}
+</script>
 
   // Bind swipe every render
   const card = document.getElementById('card');
