@@ -5,16 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BookHook</title>
 
-<!-- ===== Base styles ===== -->
 <style>
-  /* Swipe instructions (“pills”) */
-.hintbar{
-  display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:-4px 0 10px;
-}
-.hint-pill{
-  padding:6px 10px; border-radius:999px; border:1px solid var(--line);
-  background:#fff; font-weight:600; font-size:12px; color:#444;
-}
 :root{
   --bg:#f7f7f8; --fg:#111; --muted:#6b7280;
   --card:#fff; --line:#e5e7eb; --pill:#f5f5f5;
@@ -37,64 +28,47 @@ h1,h2{margin:0 0 10px}
 .pill{padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:var(--pill);cursor:pointer}
 .pill.on{background:#111;color:#fff;border-color:#111}
 
-/* ===== Top nav (centered) ===== */
+/* Top bar (centered nav) */
 .topbar{position:sticky;top:0;z-index:3;background:#fff;border-bottom:1px solid var(--line)}
 .topbar .nav{display:flex;justify-content:center;gap:10px;padding:10px 0;flex-wrap:wrap}
 .topbar .status{position:absolute;right:14px;top:10px}
 
-/* ===== Hero (centered logo) ===== */
+/* Hero (center logo) */
 .hero{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 12px}
 .logo{height:56px}
 .logoText{font-weight:800}
 
-/* ===== Discover: carousel + card ===== */
+/* Discover: carousel + card */
+.hintbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:-4px 0 10px}
+.hint-pill{padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:600;font-size:12px;color:#444}
+
 .carousel{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px}
 .carousel::-webkit-scrollbar{display:none}
-.card-gesture{min-width:680px;max-width:680px;scroll-snap-align:center;
+
+.card-gesture{
+  min-width:680px;max-width:680px;scroll-snap-align:center;
   display:grid;grid-template-columns:190px 1fr;gap:16px;
-  background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,.06);
-  position:relative;touch-action:pan-y;user-select:none;will-change:transform}
+  background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;
+  box-shadow:0 6px 18px rgba(0,0,0,.06);
+  position:relative;touch-action:pan-y;user-select:none;will-change:transform;
+  contain: layout paint; backface-visibility:hidden; transform:translateZ(0);
+}
 @media (max-width:760px){.card-gesture{min-width:92vw;grid-template-columns:1fr}}
-.cover{width:100%;aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:#e9eef3;display:flex;align-items:center;justify-content:center}
-.cover img{width:100%;height:100%;object-fit:cover;display:block}
+
+.cover{width:100%;aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:#e9eef3;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:40px}
+.cover img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;-webkit-user-drag:none}
+
 .title{margin:6px 0 4px;font-size:22px;line-height:1.25;font-weight:800}
 .chips{display:flex;gap:8px;margin:6px 0 10px;align-items:center;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
 .chip{display:inline-flex;white-space:nowrap;padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fafafa;font-size:13px}
-  /* === Swipe performance tune-ups === */
-.card-gesture{
-  will-change: transform;
-  touch-action: pan-y;   /* still allows vertical scroll */
-  user-select: none;
-}
-.badge-swipe{
-  pointer-events: none;  /* don’t block drags */
-}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-.badge-swipe{position:absolute;top:10px;padding:6px 10px;border-radius:8px;font-weight:700;border:2px solid;background:rgba(255,255,255,.9);opacity:0;transition:opacity .12s}
+
+.badge-swipe{position:absolute;top:10px;padding:6px 10px;border-radius:8px;font-weight:700;border:2px solid;background:rgba(255,255,255,.9);opacity:0;transition:opacity .12s;pointer-events:none}
 .badge-swipe.like{left:10px;color:#0a6a0a;border-color:#0a6a0a}
 .badge-swipe.nope{right:10px;color:#cc1b1b;border-color:#cc1b1b}
 
-  /* --- Swipe perf hints --- */
-.card-gesture{
-  will-change: transform;
-  touch-action: pan-y;           /* keep vertical page scroll */
-  user-select: none;
-  contain: layout paint;         /* isolate for cheaper paints */
-  backface-visibility: hidden;   /* avoid blurring on iOS */
-  transform: translateZ(0);      /* force GPU layer */
-}
-.badge-swipe{ pointer-events:none; }  /* don’t intercept drags */
-.cover img{ pointer-events:none; -webkit-user-drag:none; } /* stop image drag ghost */
- /* speed help */
-.card-gesture{
-  will-change: transform;
-  touch-action: pan-y;      /* let vertical page scroll, we handle X */
-  user-select: none;
-}
-.badge-swipe{ pointer-events:none; } /* badges never block touches */ 
-  
-/* ===== Shelf mini list ===== */
+/* Shelf mini list */
 .list{display:flex;flex-direction:column;gap:10px}
 .tile{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:12px;background:#fff}
 .thumb{width:64px;height:96px;border-radius:8px;background:#eee;overflow:hidden}
@@ -109,7 +83,7 @@ h1,h2{margin:0 0 10px}
 <body>
 <div class="topbar">
   <div class="nav">
-    <button class="btn small" onclick="scrollToId('discover')">Discover</button>
+    <button class="btn small" onclick="scrollToId('discoverSection')">Discover</button>
     <button class="btn small" onclick="scrollToId('hookmarks')">HookMarks</button>
     <button class="btn small" onclick="scrollToId('profile')">My Profile</button>
     <button class="btn small" onclick="scrollToId('boards')">Leaderboards</button>
@@ -120,13 +94,13 @@ h1,h2{margin:0 0 10px}
 <main class="wrap">
   <!-- Hero -->
   <section class="hero">
-    <!-- simple black book + hook icon (no text baked in) -->
-    <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 32" aria-label="BookHook">
-      <!-- book -->
-      <path d="M4 4h26a6 6 0 0 1 6 6v16H10a6 6 0 0 1-6-6V4Z" fill="#000"/>
-      <path d="M34 4h26v16a6 6 0 0 1-6 6H28V10a6 6 0 0 1 6-6Z" fill="#000" opacity=".9"/>
-      <!-- hook -->
-      <path d="M44 8l6 8-6 8" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Original black book + hook icon (no text baked into the SVG) -->
+    <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-label="BookHook">
+      <!-- book (open) -->
+      <path d="M8 12h20a8 8 0 0 1 8 8v32H16a8 8 0 0 1-8-8V12Z" fill="#000"/>
+      <path d="M36 12h20v32a8 8 0 0 1-8 8H28V20a8 8 0 0 1 8-8Z" fill="#000" opacity=".9"/>
+      <!-- hook/arrow pointing forward -->
+      <path d="M44 22l8 10-8 10" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     <div class="logoText">BookHook</div>
   </section>
@@ -157,17 +131,17 @@ h1,h2{margin:0 0 10px}
   </section>
 
   <!-- Discover -->
-<section class="card" id="discoverSection">
-  <h2>Discover</h2>
+  <section class="card" id="discoverSection">
+    <h2>Discover</h2>
+    <div class="hintbar">
+      <span class="hint-pill">Swipe left → Want</span>
+      <span class="hint-pill">Swipe right → Reading</span>
+      <span class="hint-pill">Tap “Already read” to add HookMarks</span>
+    </div>
+    <!-- 👇 this id must be "carousel" (JS renders here) -->
+    <div id="carousel" class="carousel"></div>
+  </section>
 
-  <div class="hintbar">
-    <span class="hint-pill">Swipe left → Want</span>
-    <span class="hint-pill">Swipe right → Reading</span>
-    <span class="hint-pill">Tap “Already read” to add HookMarks</span>
-  </div>
-
-  <div id="swipe" class="swipe"></div>
-</section>
   <!-- Your Shelf -->
   <section class="card" id="shelf">
     <h2>Your Shelf</h2>
@@ -175,7 +149,7 @@ h1,h2{margin:0 0 10px}
     <div id="shelfList" class="list"></div>
   </section>
 
-  <!-- HookMarks (placeholder shell, unchanged for brevity) -->
+  <!-- HookMarks (placeholder) -->
   <section class="card" id="hookmarks">
     <h2>HookMarks</h2>
     <div class="muted">Add when you mark “Already read”.</div>
@@ -198,9 +172,8 @@ h1,h2{margin:0 0 10px}
   </section>
 </main>
 
-<!-- ===== Logic ===== -->
 <script>
-/* --- state --- */
+/* ================= State ================= */
 const state = {
   moodNowLevel:null,
   desired:new Set(),
@@ -209,7 +182,7 @@ const state = {
   order:[]
 };
 
-/* --- desired mood groups (incl. Entrepreneurial) --- */
+/* ================= Desired Mood groups (incl. Entrepreneurial) ================= */
 const MOOD_GROUPS = {
   "Calm / Steady": ["Calm","Restful","Reflective","Grounding","Peaceful","Soothing"],
   "Clarity": ["Clear-headed","Focused","Insightful","Mindset-shifting"],
@@ -225,9 +198,8 @@ const MOOD_MAP = {
   high:["happy","joyful","excited","energized","pumped","hyped","curious","inspired","motivated"]
 };
 
-/* --- sample books (covers auto-fetched if not provided) --- */
+/* ================= Books ================= */
 const BOOKS = [
-  // — Keep your two first-party titles —
   { id:"rid", title:"The Ridiculous: Book 1", author:"Jef & Mindy",
     vibes:["Funny","Satirical","Empowering","Chill","Feel-good"],
     facts:{pace:"Medium", pages:312, year:2024}, gold:true, links:{site:"#", buy:"#"} },
@@ -236,7 +208,6 @@ const BOOKS = [
     vibes:["Inspiring","Playful","Comedic","Uplifting","Fast"],
     facts:{pace:"Fast", pages:248, year:2025}, links:{buy:"#"} },
 
-  // — Popular, high-likelihood covers from Google Books —
   { id:"phm", title:"Project Hail Mary", author:"Andy Weir",
     vibes:["Adventurous","Ingenious","Page-turner","Uplifting"],
     facts:{pace:"Fast", pages:496, year:2021} },
@@ -270,14 +241,18 @@ const BOOKS = [
     facts:{pace:"Fast", pages:320, year:2018} }
 ];
 
-/* --- helpers --- */
+/* ================= Helpers ================= */
 const $ = s => document.querySelector(s);
 function scrollToId(id){ document.getElementById(id)?.scrollIntoView({behavior:'smooth'}); }
-function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;","<": "&lt;",">":"&gt;","\"":"&quot;"}[m]) )}
+function escapeHtml(s){
+  return String(s||'').replace(/[&<>"']/g, m => (
+    {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[m]
+  ));
+}
 function addPts(n){ state.pts+=n; localStorage.setItem('bh_pts',state.pts); $('#pts').textContent=state.pts+' pts'; $('#profilePts').textContent=state.pts; }
 
-/* --- feeling --- */
-$('#setMoodFree').addEventListener('click',()=>mapFreeMood($('#moodFree').value));
+/* ================= Feeling ================= */
+document.getElementById('setMoodFree').addEventListener('click',()=>mapFreeMood($('#moodFree').value));
 function setLevel(v){ state.moodNowLevel=v; refreshMatches(); }
 function mapFreeMood(text){
   const t=(text||'').toLowerCase().trim(); if(!t) return;
@@ -288,7 +263,7 @@ function mapFreeMood(text){
   refreshMatches();
 }
 
-/* --- desired mood UI --- */
+/* ================= Desired Mood UI ================= */
 function renderDesiredTabs(){
   $('#desiredTabs').innerHTML = Object.keys(MOOD_GROUPS).map(g =>
     `<button class="pill ${g===activeGroup?'on':''}" onclick="setDesiredGroup('${g}')">${g}</button>`).join('');
@@ -301,7 +276,7 @@ function renderDesiredPills(){
 }
 function toggleDesired(n){ state.desired.has(n)?state.desired.delete(n):state.desired.add(n); renderDesiredPills(); refreshMatches(); }
 
-/* --- cover fetch (Google Books) --- */
+/* ================= Covers ================= */
 async function prefetchCovers(){
   const tryGoogle = async (b)=>{
     const q = encodeURIComponent(`intitle:${b.title} inauthor:${b.author}`);
@@ -312,19 +287,13 @@ async function prefetchCovers(){
              || d?.items?.[0]?.volumeInfo?.imageLinks?.smallThumbnail;
     return img ? img.replace('http://','https://') : null;
   };
-
   await Promise.all(BOOKS.map(async b=>{
-    if (b.image) return; // already set
-    try {
-      const gimg = await tryGoogle(b);
-      if (gimg){ b.image = gimg; return; }
-    } catch(e){ /* ignore */ }
-    // No image found → keep item, we’ll show a clean placeholder letter instead of skipping it
-    b.image = null;
+    if (b.image) return;
+    try { b.image = await tryGoogle(b); } catch(e){ b.image = null; }
   }));
 }
 
-/* --- matching + render --- */
+/* ================= Scoring + render ================= */
 function score(b){
   const inter=(arr,set)=>arr.filter(x=>set.has(x)).length;
   let s = inter(b.vibes||[], state.desired)*1.4;
@@ -334,12 +303,11 @@ function score(b){
   return s;
 }
 function refreshMatches(){
-  const pool = BOOKS; // show all; if image missing we show a clean placeholder
-  state.order = [...pool].sort((a,b)=>score(b)-score(a));
+  state.order = [...BOOKS].sort((a,b)=>score(b)-score(a));
   renderCarousel();
 }
 
-/* --- carousel + per-card swipe --- */
+/* ================= Carousel + per-card swipe ================= */
 function renderCarousel(){
   const box = $('#carousel'); if(!box) return;
   box.innerHTML = state.order.map(b=>{
@@ -350,9 +318,10 @@ function renderCarousel(){
       b.facts?.year?`Since ${b.facts.year}`:null
     ].filter(Boolean);
     const chipsHtml = chips.map(c=>`<span class="chip">${escapeHtml(c)}</span>`).join('');
+    const placeholder = escapeHtml(b.title?.[0]||'?');
     return `
       <article class="card-gesture" data-id="${b.id}">
-        <div class="cover">${b.image?`<img src="${b.image}" alt="Cover of ${escapeHtml(b.title)}">`:escapeHtml(b.title[0]||'?')}</div>
+        <div class="cover">${b.image?`<img src="${b.image}" alt="Cover of ${escapeHtml(b.title)}">`:placeholder}</div>
         <div>
           <div class="row" style="justify-content:space-between;align-items:center">
             <div>${b.gold?'<span class="badge gold">Featured</span>':''}</div>
@@ -372,17 +341,15 @@ function renderCarousel(){
       </article>`;
   }).join('');
 
-  // bind swipe to each card
   box.querySelectorAll('.card-gesture').forEach(card=>{
     const id = card.getAttribute('data-id');
     addSwipe(card, ()=>markShelf(id,'want'), ()=>markShelf(id,'reading'));
-    // optional: arrow keys when focused (desktop)
     card.tabIndex=0;
     card.onkeydown = (e)=>{ if(e.key==='ArrowLeft') markShelf(id,'want'); if(e.key==='ArrowRight') markShelf(id,'reading'); };
   });
 }
 
-/* swipe handler */
+/* Smooth, fast swipe */
 function addSwipe(el,onLeft,onRight){
   let startX=0,dx=0,drag=false;
   const like=el.querySelector('.badge-swipe.like');
@@ -410,7 +377,7 @@ function addSwipe(el,onLeft,onRight){
   el.addEventListener('pointercancel',up,{passive:true});
 }
 
-/* shelf mini list */
+/* ================= Shelf mini list ================= */
 function markShelf(id,status){
   const b=BOOKS.find(x=>x.id===id); if(!b) return;
   const ex = state.shelf.find(x=>x.id===id);
@@ -431,84 +398,13 @@ function renderShelf(){
     </div>`).join('');
 }
 
-  <script>
-function addSwipe(el, onLeft, onRight) {
-  let startX = 0, startY = 0, dx = 0, dy = 0, drag = false;
-  let like = el.querySelector('.badge-swipe.like'),
-      nope = el.querySelector('.badge-swipe.nope');
-
-  // Pointer down
-  const down = (e) => {
-    drag = true;
-    startX = e.clientX ?? e.touches?.[0]?.clientX;
-    startY = e.clientY ?? e.touches?.[0]?.clientY;
-    dx = dy = 0;
-    el.style.transition = '';
-  };
-
-  // Pointer move
-  const move = (e) => {
-    if (!drag) return;
-    const x = e.clientX ?? e.touches?.[0]?.clientX;
-    const y = e.clientY ?? e.touches?.[0]?.clientY;
-    dx = x - startX;
-    dy = y - startY;
-
-    // translate + rotate
-    el.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx/15}deg)`;
-
-    // Show label
-    const a = Math.min(1, Math.abs(dx) / 100);
-    if (dx > 0) {
-      like.style.opacity = a; nope.style.opacity = 0;
-    } else {
-      nope.style.opacity = a; like.style.opacity = 0;
-    }
-  };
-
-  // Reset / snap back
-  const snap = () => {
-    el.style.transition = 'transform .25s ease';
-    el.style.transform = 'translate(0,0) rotate(0)';
-    like.style.opacity = 0;
-    nope.style.opacity = 0;
-  };
-
-  // Pointer up
-  const up = () => {
-    if (!drag) return;
-    drag = false;
-
-    // velocity-sensitive swipe
-    if (dx > 120) {
-      el.style.transition = 'transform .3s ease-out';
-      el.style.transform = 'translate(100vw, -40px) rotate(20deg)';
-      setTimeout(onRight, 200);
-    } else if (dx < -120) {
-      el.style.transition = 'transform .3s ease-out';
-      el.style.transform = 'translate(-100vw, -40px) rotate(-20deg)';
-      setTimeout(onLeft, 200);
-    } else {
-      snap();
-    }
-  };
-
-  // Bind events
-  el.addEventListener('pointerdown', down);
-  el.addEventListener('pointermove', move);
-  el.addEventListener('pointerup', up);
-  el.addEventListener('pointercancel', up);
-  el.addEventListener('touchstart', down);
-  el.addEventListener('touchmove', move);
-  el.addEventListener('touchend', up);
-}
-/* boot */
+/* ================= Boot ================= */
 document.addEventListener('DOMContentLoaded', async ()=>{
   $('#pts').textContent = state.pts + ' pts';
   $('#profilePts').textContent = state.pts;
   renderDesiredTabs(); renderDesiredPills();
-  await prefetchCovers();           // pulls real covers where possible
-  refreshMatches();                 // builds carousel
+  await prefetchCovers();   // pull covers where possible
+  refreshMatches();         // build carousel
   renderShelf();
 });
 </script>
