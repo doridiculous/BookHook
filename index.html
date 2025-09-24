@@ -330,6 +330,10 @@ function escapeHtml(s){
 function addPts(n){ state.pts+=n; localStorage.setItem('bh_pts',state.pts); $('#pts').textContent=state.pts+' pts'; $('#profilePts').textContent=state.pts; }
 
 /* ============ Feeling ============ */
+  function refreshMatches(){
+  state.order = [...BOOKS].sort((a,b)=>score(b)-score(a));
+  renderDeck();
+}
 /* === Desired Mood data & UI === */
 const MOOD_GROUPS = {
   "Calm / Steady": ["Calm","Restful","Reflective","Grounding","Peaceful","Soothing"],
