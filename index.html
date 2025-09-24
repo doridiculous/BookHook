@@ -184,8 +184,12 @@ h1,h2{margin:0 0 10px}
   <!-- —— Discover —— -->
   <section class="card" id="discoverSection">
   <h2>Discover</h2>
-  
-  <!-- Card stack (one on screen, next ones sit behind) -->
+  <div class="hintbar">
+    <span class="hint-pill">Swipe left → Want</span>
+    <span class="hint-pill">Swipe right → Reading</span>
+    <span class="hint-pill">Tap “Already read” to add HookMarks</span>
+  </div>
+  <!-- Deck renderer puts 1–3 stacked cards here -->
   <div id="deck" class="deck"></div>
 </section>
 
