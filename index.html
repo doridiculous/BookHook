@@ -330,15 +330,33 @@ function escapeHtml(s){
 function addPts(n){ state.pts+=n; localStorage.setItem('bh_pts',state.pts); $('#pts').textContent=state.pts+' pts'; $('#profilePts').textContent=state.pts; }
 
 /* ============ Feeling ============ */
-document.getElementById('setMoodFree').addEventListener('click',()=>mapFreeMood($('#moodFree').value));
-function setLevel(v){ state.moodNowLevel=v; refreshMatches(); }
-function mapFreeMood(text){
-  const t=(text||'').toLowerCase().trim(); if(!t) return;
-  const hit=a=>a.some(w=>t.includes(w));
-  if(hit(MOOD_MAP.high)) state.moodNowLevel='High';
-  else if(hit(MOOD_MAP.low)) state.moodNowLevel='Low';
-  else state.moodNowLevel='Medium';
-  refreshMatches();
+/* === Desired Mood data & UI === */
+const MOOD_GROUPS = {
+  "Calm / Steady": ["Calm","Restful","Reflective","Grounding","Peaceful","Soothing"],
+  "Clarity":       ["Clear-headed","Focused","Insightful","Mindset-shifting"],
+  "Drive":         ["Motivated","Empowered","Productive","Entrepreneurial"],
+  "Spark / Fun":   ["Playful","Silly","Comedic","Uplifting","Inspiring","Arousing"],
+  "Comfort & Care":["Comforted","Self-loving","Grateful","Connected"]
+};
+let activeGroup = Object.keys(MOOD_GROUPS)[0];
+
+function renderDesiredTabs(){
+  document.getElementById('desiredTabs').innerHTML =
+    Object.keys(MOOD_GROUPS).map(g =>
+      `<button class="pill ${g===activeGroup?'on':''}" onclick="setDesiredGroup('${g}')">${g}</button>`
+    ).join('');
+}
+function setDesiredGroup(g){
+  activeGroup = g; renderDesiredTabs(); renderDesiredPills(); refreshMatches();
+}
+function renderDesiredPills(){
+  const items = MOOD_GROUPS[activeGroup];
+  document.getElementById('desiredPills').innerHTML =
+    items.map(n => `<button class="pill ${state.desired.has(n)?'on':''}" onclick="toggleDesired('${n}')">${n}</button>`).join('');
+}
+function toggleDesired(n){
+  state.desired.has(n) ? state.desired.delete(n) : state.desired.add(n);
+  renderDesiredPills(); refreshMatches();
 }
 
 /* ============ Desired Mood UI ============ */
