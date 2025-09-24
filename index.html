@@ -337,7 +337,7 @@ function score(b){
 }
 function refreshMatches(){
   state.order = [...BOOKS].sort((a,b)=>score(b)-score(a));
-  renderCarousel();
+  renderDeck();
 }
 
 /* ============ Carousel + per-card swipe ============ */
