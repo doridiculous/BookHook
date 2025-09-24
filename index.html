@@ -529,6 +529,116 @@ function renderShelf(){
       <div class="stat ${b.status}">${b.status}</div>
     </div>`).join('');
 }
+  /* === Deck renderer (creates 3 stacked cards) === */
+function renderDeck(){
+  const box = document.getElementById('deck'); if(!box) return;
+  const take = state.order.slice(0,3); // top 3
+  box.innerHTML = take.map((b,i)=>{
+    const chips = [
+      ...(b.vibes||[]),
+      b.facts?.pace,
+      b.facts?.pages?`${b.facts.pages}p`:null,
+      b.facts?.year?`Since ${b.facts.year}`:null
+    ].filter(Boolean);
+    const chipsHtml = chips.map(c=>`<span class="chip">${escapeHtml(c)}</span>`).join('');
+    const cover = b.image ? `<img src="${b.image}" alt="Cover of ${escapeHtml(b.title)}">`
+                          : escapeHtml(b.title?.[0]||'?');
+    return `
+      <article class="card" data-id="${b.id}" style="z-index:${3-i}">
+        <div class="cover">${cover}</div>
+        <div>
+          <div class="row" style="justify-content:space-between;align-items:center">
+            <div>${b.gold?'<span class="badge gold">Featured</span>':''}</div>
+            <div class="badge gold">${state.pts} pts</div>
+          </div>
+          <div class="title">${escapeHtml(b.title)}</div>
+          <div class="muted">by ${escapeHtml(b.author)}</div>
+          <div class="chips">${chipsHtml}</div>
+          <div class="actions">
+            <button class="btn" onclick="markShelf('${b.id}','want')">Want (+5)</button>
+            <button class="btn" onclick="markShelf('${b.id}','reading')">Reading (+7)</button>
+            <button class="btn" style="background:#fff7cc;border-color:#d6bb00" onclick="markShelf('${b.id}','read')">Already read</button>
+          </div>
+        </div>
+        <span class="badge-swipe like">SAVE</span>
+        <span class="badge-swipe nope">NOPE</span>
+      </article>`;
+  }).join('');
+
+  // bind swipe to the TOP card only
+  const top = box.querySelector('.card'); if(!top) return;
+  const id = top.getAttribute('data-id');
+  addSwipe(top, ()=>markShelf(id,'want')||advanceDeck(), ()=>markShelf(id,'reading')||advanceDeck());
+  top.tabIndex = 0;
+  top.onkeydown = (e)=>{ if(e.key==='ArrowLeft'){ markShelf(id,'want'); advanceDeck(); }
+                         if(e.key==='ArrowRight'){ markShelf(id,'reading'); advanceDeck(); } };
+}
+function advanceDeck(){
+  state.order.push(state.order.shift());
+  renderDeck();
+}
+
+/* === Smooth, fast swipe for the single top card === */
+function addSwipe(el, onLeft, onRight){
+  const THRESH_DIST = 60;   // px
+  const THRESH_VELO = 0.6;  // px/ms
+  const FLY_MS      = 220;
+
+  let downX=0, downY=0, dx=0, dy=0, dragging=false;
+  let lastX=0, lastT=0, vx=0;
+  const like = el.querySelector('.badge-swipe.like');
+  const nope = el.querySelector('.badge-swipe.nope');
+  let raf = 0;
+
+  const apply = () => {
+    el.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx/15}deg)`;
+    const a = Math.min(1, Math.abs(dx)/120);
+    if (dx > 0){ like.style.opacity = a; nope.style.opacity = 0; }
+    else       { nope.style.opacity = a; like.style.opacity = 0; }
+    raf = 0;
+  };
+  const update = () => { if(!raf) raf = requestAnimationFrame(apply); };
+
+  const down = (e) => {
+    dragging = true; el.style.transition = '';
+    const p = e.touches ? e.touches[0] : e;
+    downX = lastX = p.clientX; downY = p.clientY; dx = dy = 0; lastT = performance.now();
+  };
+  const move = (e) => {
+    if(!dragging) return;
+    const p = e.touches ? e.touches[0] : e;
+    const t = performance.now();
+    dx = p.clientX - downX; dy = p.clientY - downY;
+    const dt = Math.max(1, t - lastT); vx = (p.clientX - lastX)/dt; lastX = p.clientX; lastT = t;
+    update();
+  };
+  const flyOut = (right) => {
+    el.style.transition = `transform ${FLY_MS}ms ease-out`;
+    const x = right ? window.innerWidth : -window.innerWidth;
+    el.style.transform = `translate(${x}px, -40px) rotate(${right?20:-20}deg)`;
+    setTimeout(right?onRight:onLeft, FLY_MS - 40);
+    like.style.opacity = 0; nope.style.opacity = 0;
+  };
+  const snap = () => {
+    el.style.transition = 'transform 180ms ease';
+    el.style.transform = 'translate(0,0) rotate(0)';
+    like.style.opacity = 0; nope.style.opacity = 0;
+  };
+  const up = () => {
+    if(!dragging) return; dragging = false;
+    const fastFlick = Math.abs(vx) > THRESH_VELO;
+    const farDrag   = Math.abs(dx) > THRESH_DIST;
+    if(fastFlick || farDrag) flyOut(dx>0); else snap();
+  };
+
+  el.addEventListener('pointerdown',  down, {passive:true});
+  el.addEventListener('pointermove',  move, {passive:true});
+  el.addEventListener('pointerup',    up,   {passive:true});
+  el.addEventListener('pointercancel',up,   {passive:true});
+  el.addEventListener('touchstart',   down, {passive:true});
+  el.addEventListener('touchmove',    move, {passive:true});
+  el.addEventListener('touchend',     up,   {passive:true});
+}
 document.addEventListener('DOMContentLoaded', async ()=>{
   document.getElementById('pts').textContent = state.pts + ' pts';
   document.getElementById('profilePts').textContent = state.pts;
