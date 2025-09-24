@@ -480,7 +480,18 @@ function renderShelf(){
       <div class="stat ${b.status}">${b.status}</div>
     </div>`).join('');
 }
+document.addEventListener('DOMContentLoaded', async ()=>{
+  document.getElementById('pts').textContent = state.pts + ' pts';
+  document.getElementById('profilePts').textContent = state.pts;
 
+  renderDesiredTabs();
+  renderDesiredPills();
+
+  await prefetchCovers();  // fetch covers if possible
+  refreshMatches();        // builds the deck (uses images or letter fallback)
+
+  renderShelf();
+});
 /* ============ Boot ============ */
 document.addEventListener('DOMContentLoaded', async ()=>{
   $('#pts').textContent = state.pts + ' pts';
