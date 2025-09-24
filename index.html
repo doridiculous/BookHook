@@ -341,38 +341,6 @@ function refreshMatches(){
 }
 
 /* ============ Carousel + per-card swipe ============ */
-function renderCarousel(){
-  const box = $('#carousel'); if(!box) return;
-  box.innerHTML = state.order.map(b=>{
-    const chips = [
-      ...(b.vibes||[]),
-      b.facts?.pace,
-      b.facts?.pages?`${b.facts.pages}p`:null,
-      b.facts?.year?`Since ${b.facts.year}`:null
-    ].filter(Boolean);
-    const chipsHtml = chips.map(c=>`<span class="chip">${escapeHtml(c)}</span>`).join('');
-    const placeholder = escapeHtml(b.title?.[0]||'?');
-    return `
-      <article class="card-gesture" data-id="${b.id}">
-        <div class="cover">${b.image?`<img src="${b.image}" alt="Cover of ${escapeHtml(b.title)}">`:placeholder}</div>
-        <div>
-          <div class="row" style="justify-content:space-between;align-items:center">
-            <div>${b.gold?'<span class="badge gold">Featured</span>':''}</div>
-            <div class="badge gold">${state.pts} pts</div>
-          </div>
-          <div class="title">${escapeHtml(b.title)}</div>
-          <div class="muted">by ${escapeHtml(b.author)}</div>
-          <div class="chips">${chipsHtml}</div>
-          <div class="actions">
-            <button class="btn" onclick="markShelf('${b.id}','want')">Want (+5)</button>
-            <button class="btn" onclick="markShelf('${b.id}','reading')">Reading (+7)</button>
-            <button class="btn" style="background:#fff7cc;border-color:#d6bb00" onclick="markShelf('${b.id}','read')">Already read</button>
-          </div>
-        </div>
-        <span class="badge-swipe like">SAVE</span>
-        <span class="badge-swipe nope">NOPE</span>
-      </article>`;
-  }).join('');
 
   // Bind swipe to each card
   box.querySelectorAll('.card-gesture').forEach(card=>{
